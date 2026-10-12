@@ -16,27 +16,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  xenon-toolchain:
+  diagnose-and-build:
+    name: Diagnose upstream Xenon SDK and build probe
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     env:
-      PREFIX: ${{ runner.temp }}/xenon-sdk
       DEVKITXENON: ${{ runner.temp }}/xenon-sdk
       PARALLEL: '-j2'
-      FREE60_DOCKER_BUILD: 'true'
     steps:
       - name: Checkout DreamKai360
         uses: actions/checkout@v4
 
-      - name: Restore Xenon SDK cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ runner.temp }}/xenon-sdk
-          key: ${{ runner.os }}-dreamkai360-xenon-sdk-v1
-          restore-keys: |
-            ${{ runner.os }}-dreamkai360-xenon-sdk-
+      - name: Confirm cloud runner and repository
+        run: |
+          set -eux
+          uname -a
+          git --version
+          test -f cloud/xenon_probe.c
+          test -f cloud/Makefile
 
-      - name: Install build dependencies on cloud runner
+      - name: Install Xenon toolchain build prerequisites
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -45,43 +44,57 @@ jobs:
             tar patch xz-utils file binutils make autoconf automake \
             libtool gawk python3
 
-      - name: Fetch upstream libXenon builder
-        run: |
-          git clone --depth 1 https://github.com/Free60Project/libxenon.git third_party-libxenon
-          git -C third_party-libxenon rev-parse HEAD | tee libxenon-commit.txt
-          test -x third_party-libxenon/toolchain/build-xenon-toolchain || chmod +x third_party-libxenon/toolchain/build-xenon-toolchain
-
-      - name: Build Xenon cross compiler if cache is incomplete
-        run: |
-          if [ -x "$DEVKITXENON/bin/xenon-gcc" ] && [ -x "$DEVKITXENON/bin/xenon-ld" ] && [ -f "$DEVKITXENON/rules" ] && [ -f "$DEVKITXENON/app.lds" ]; then
-            echo 'A cached Xenon SDK was found.'
-          else
-            echo 'No complete cache found; compiling the Xenon toolchain on the cloud runner.'
-            cd third_party-libxenon/toolchain
-            ./build-xenon-toolchain toolchain
-          fi
-
-      - name: Build libXenon runtime
-        run: |
-          export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
-          cd third_party-libxenon/toolchain
-          ./build-xenon-toolchain libxenon
-
-      - name: Check SDK and compile probe ELF
+      - name: Download upstream libXenon and locate build scripts
         run: |
           set -euxo pipefail
+          git clone --depth 1 https://github.com/Free60Project/libxenon.git third_party-libxenon
+          git -C third_party-libxenon rev-parse HEAD | tee libxenon-commit.txt
+          echo '--- repository top level ---'
+          find third_party-libxenon -maxdepth 2 -type f | sort | head -250
+          echo '--- candidate build scripts ---'
+          find third_party-libxenon -type f \( -iname '*toolchain*' -o -iname '*build*xenon*' -o -name 'Makefile' \) | sort | head -300
+
+      - name: Restore Xenon SDK cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/xenon-sdk
+          key: ${{ runner.os }}-dreamkai360-xenon-sdk-v2
+          restore-keys: |
+            ${{ runner.os }}-dreamkai360-xenon-sdk-
+
+      - name: Build Xenon toolchain and runtime
+        run: |
+          set -euxo pipefail
+          mkdir -p "$DEVKITXENON"
+          export PREFIX="$DEVKITXENON"
+          export DEVKITXENON
           export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
+          BUILDER="$(find third_party-libxenon -type f -name 'build-xenon-toolchain' -print -quit)"
+          if [ -z "$BUILDER" ]; then
+            echo "::error::Upstream checkout has no build-xenon-toolchain script."
+            exit 2
+          fi
+          chmod +x "$BUILDER"
+          BUILDER_DIR="$(dirname "$BUILDER")"
+          cd "$BUILDER_DIR"
+          "$BUILDER" toolchain
+          "$BUILDER" libxenon
           test -x "$DEVKITXENON/bin/xenon-gcc"
           test -x "$DEVKITXENON/bin/xenon-ld"
           test -f "$DEVKITXENON/rules"
           test -f "$DEVKITXENON/app.lds"
-          make -C cloud
+
+      - name: Compile and inspect Xenon ELF probe
+        run: |
+          set -euxo pipefail
+          export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
+          make -C cloud clean all
           test -s cloud/dreamkai360_cloud_probe.elf32
           file cloud/dreamkai360_cloud_probe.elf32
           readelf -h cloud/dreamkai360_cloud_probe.elf32
           sha256sum cloud/dreamkai360_cloud_probe.elf32 | tee cloud/SHA256SUMS.txt
 
-      - name: Save diagnostics even if a prior step failed
+      - name: Collect diagnostics
         if: always()
         run: |
           mkdir -p cloud-report
@@ -97,12 +110,12 @@ jobs:
             else
               echo "xenon-gcc not produced"
             fi
-            if [ -f third_party-libxenon/toolchain/build.log ]; then
-              cp third_party-libxenon/toolchain/build.log cloud-report/ || true
-            fi
           } > cloud-report/diagnostics.txt
+          if [ -d third_party-libxenon ]; then
+            find third_party-libxenon -maxdepth 3 -type f \( -iname '*toolchain*' -o -iname '*build*xenon*' \) | sort > cloud-report/build-script-candidates.txt || true
+          fi
 
-      - name: Upload toolchain probe and logs
+      - name: Upload build logs and artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -112,4 +125,5 @@ jobs:
             cloud/SHA256SUMS.txt
             cloud-report/**
             libxenon-commit.txt
+            third_party-libxenon/toolchain/build.log
           if-no-files-found: warn
