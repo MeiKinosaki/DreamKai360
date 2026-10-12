@@ -1,0 +1,29 @@
+name: DreamKai360 Cloud Runner Sanity Check
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/cloud-runner-check.yml'
+      - 'cloud/xenon_probe.c'
+      - 'cloud/Makefile'
+
+permissions:
+  contents: read
+
+jobs:
+  runner-check:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Verify project inputs
+        run: |
+          set -eux
+          test -s cloud/xenon_probe.c
+          test -s cloud/Makefile
+          printf 'DreamKai360 cloud runner is ready.\n'
+          uname -a
+          gcc --version
+          make --version
