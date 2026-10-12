@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     env:
+      PREFIX: ${{ runner.temp }}/xenon-sdk
       DEVKITXENON: ${{ runner.temp }}/xenon-sdk
       PARALLEL: '-j2'
     steps:
@@ -77,8 +78,8 @@ jobs:
           chmod +x "$BUILDER"
           BUILDER_DIR="$(dirname "$BUILDER")"
           cd "$BUILDER_DIR"
-          "$BUILDER" toolchain
-          "$BUILDER" libxenon
+          ./build-xenon-toolchain toolchain
+          ./build-xenon-toolchain libxenon
           test -x "$DEVKITXENON/bin/xenon-gcc"
           test -x "$DEVKITXENON/bin/xenon-ld"
           test -f "$DEVKITXENON/rules"
