@@ -91,7 +91,7 @@ jobs:
           test -s cloud/dreamkai360_cloud_probe.elf
           test -s cloud/dreamkai360_cloud_probe.elf32
           file cloud/dreamkai360_cloud_probe.elf cloud/dreamkai360_cloud_probe.elf32
-          readelf -h cloud/dreamkai360_cloud_probe.elf
+          bash cloud/audit_elf.sh cloud/dreamkai360_cloud_probe.elf cloud/dreamkai360_cloud_probe.elf32 | tee cloud/ELF_AUDIT.txt
           sha256sum cloud/dreamkai360_cloud_probe.elf cloud/dreamkai360_cloud_probe.elf32 | tee cloud/SHA256SUMS.txt
 
       - name: Collect diagnostics
@@ -126,6 +126,7 @@ jobs:
             cloud/dreamkai360_cloud_probe.elf
             cloud/dreamkai360_cloud_probe.elf32
             cloud/SHA256SUMS.txt
+            cloud/ELF_AUDIT.txt
             cloud-report/**
             libxenon-commit.txt
             third_party-libxenon/toolchain/build.log
