@@ -80,8 +80,6 @@ jobs:
           export DEVKITXENON="$RUNNER_TEMP/xenon-sdk"
           export PREFIX="$DEVKITXENON"
           export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
-          # Upstream build script expects the source tree at ../libxenon.
-          ln -sfn "$GITHUB_WORKSPACE/third_party-libxenon" third_party-libxenon/toolchain/../libxenon
           cd third_party-libxenon/toolchain
           ./build-xenon-toolchain libxenon
           find "$DEVKITXENON/usr" -maxdepth 3 -type f | sort | head -120
