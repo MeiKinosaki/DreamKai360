@@ -51,6 +51,8 @@ jobs:
           git -C third_party-libxenon rev-parse HEAD | tee libxenon-commit.txt
           test -f third_party-libxenon/toolchain/build-xenon-toolchain
           chmod +x third_party-libxenon/toolchain/build-xenon-toolchain
+          # Upstream defaults point GMP/MPFR at /opt/local; Ubuntu runner packages live in /usr.
+          sed -i 's#/opt/local#/usr#g' third_party-libxenon/toolchain/build-xenon-toolchain
           test -f third_party-libxenon/toolchain/binutils-2.32.diff
           test -f third_party-libxenon/toolchain/gcc-16.2.0.diff
           test -f third_party-libxenon/toolchain/newlib-3.1.0.diff
