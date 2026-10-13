@@ -22,8 +22,8 @@ grep -q 'build-xenon-toolchain' .github/workflows/xenon-cloud.yml
 grep -q 'libxenon' .github/workflows/xenon-cloud.yml
 grep -q 'xenon-gcc' cloud/Makefile
 grep -q 'xenon-objcopy' cloud/Makefile
-grep -q 'TARGET := dreamkai360_cloud_probe' cloud/Makefile
- grep -q 'all: $(TARGET).elf32' cloud/Makefile
+grep -Fq 'TARGET := dreamkai360_cloud_probe' cloud/Makefile
+grep -Fq 'all: $(TARGET).elf32' cloud/Makefile
 grep -q 'audit_elf.sh' .github/workflows/xenon-cloud.yml
 
 echo "[5/5] Summary"
