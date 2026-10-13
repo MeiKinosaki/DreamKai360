@@ -21,16 +21,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 360
     env:
-      PREFIX: ${{ runner.temp }}/xenon-sdk
-      DEVKITXENON: ${{ runner.temp }}/xenon-sdk
       PARALLEL: '-j2'
-      FREE60_DOCKER_BUILD: 'true'
     steps:
       - name: Checkout DreamKai360
         uses: actions/checkout@v4
 
       - name: Install cloud build prerequisites
         run: |
+          set -euxo pipefail
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
             build-essential gcc-multilib g++-multilib flex bison \
@@ -42,7 +40,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ runner.temp }}/xenon-sdk
-          key: ${{ runner.os }}-dreamkai360-xenon-sdk-v3
+          key: ${{ runner.os }}-dreamkai360-xenon-sdk-v4
           restore-keys: |
             ${{ runner.os }}-dreamkai360-xenon-sdk-
 
@@ -51,35 +49,43 @@ jobs:
           set -euxo pipefail
           git clone --depth 1 https://github.com/Free60Project/libxenon.git third_party-libxenon
           git -C third_party-libxenon rev-parse HEAD | tee libxenon-commit.txt
-          test -x third_party-libxenon/toolchain/build-xenon-toolchain
+          test -f third_party-libxenon/toolchain/build-xenon-toolchain
+          chmod +x third_party-libxenon/toolchain/build-xenon-toolchain
+          export DEVKITXENON="$RUNNER_TEMP/xenon-sdk"
           mkdir -p "$DEVKITXENON"
           cp third_party-libxenon/devkitxenon/rules "$DEVKITXENON/rules"
           cp third_party-libxenon/devkitxenon/app.lds "$DEVKITXENON/app.lds"
 
-      - name: Build cross compiler and C runtime if not cached
+      - name: Build Xenon cross compiler
         run: |
           set -euxo pipefail
+          export DEVKITXENON="$RUNNER_TEMP/xenon-sdk"
+          export PREFIX="$DEVKITXENON"
           export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
           if [ ! -x "$DEVKITXENON/bin/xenon-gcc" ] || [ ! -x "$DEVKITXENON/bin/xenon-ld" ]; then
             cd third_party-libxenon/toolchain
             ./build-xenon-toolchain toolchain
           else
-            echo "Cached Xenon compiler and linker found; skipping toolchain bootstrap."
+            echo "Cached Xenon compiler and linker found."
           fi
           test -x "$DEVKITXENON/bin/xenon-gcc"
           test -x "$DEVKITXENON/bin/xenon-ld"
 
-      - name: Build and install libXenon runtime
+      - name: Build libXenon runtime
         run: |
           set -euxo pipefail
+          export DEVKITXENON="$RUNNER_TEMP/xenon-sdk"
+          export PREFIX="$DEVKITXENON"
           export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
           cd third_party-libxenon/toolchain
           ./build-xenon-toolchain libxenon
-          test -f "$DEVKITXENON/usr/include/xenon.h" || find "$DEVKITXENON/usr/include" -maxdepth 2 -type f | head -80
+          find "$DEVKITXENON/usr" -maxdepth 3 -type f | sort | head -120
 
       - name: Compile Xenon ELF smoke test
         run: |
           set -euxo pipefail
+          export DEVKITXENON="$RUNNER_TEMP/xenon-sdk"
+          export PREFIX="$DEVKITXENON"
           export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
           make -C cloud clean all
           test -s cloud/dreamkai360_cloud_probe.elf
@@ -91,6 +97,7 @@ jobs:
       - name: Collect diagnostics
         if: always()
         run: |
+          set +e
           mkdir -p cloud-report
           {
             echo "Repository: $GITHUB_REPOSITORY"
@@ -99,12 +106,13 @@ jobs:
             echo "Upstream libXenon commit:"
             cat libxenon-commit.txt 2>/dev/null || echo "clone not completed"
             echo
-            if [ -x "$DEVKITXENON/bin/xenon-gcc" ]; then
-              "$DEVKITXENON/bin/xenon-gcc" --version || true
+            SDK="$RUNNER_TEMP/xenon-sdk"
+            if [ -x "$SDK/bin/xenon-gcc" ]; then
+              "$SDK/bin/xenon-gcc" --version
             else
               echo "xenon-gcc not produced"
             fi
-          } > cloud-report/diagnostics.txt
+          } > cloud-report/diagnostics.txt 2>&1
           if [ -f third_party-libxenon/toolchain/build.log ]; then
             cp third_party-libxenon/toolchain/build.log cloud-report/ || true
           fi
