@@ -3,19 +3,30 @@ Emulador de Dreamcast para Xbox 360.
 
 ## Toolchain Xenon na nuvem
 
-O workflow **DreamKai360 Cloud Xenon Toolchain** está em `.github/workflows/xenon-cloud.yml`. Ele usa um runner temporário do GitHub Actions para instalar dependências, obter o builder upstream do Free60Project/libxenon, compilar a toolchain Xenon, compilar a biblioteca libXenon e tentar gerar um ELF de teste.
+O workflow **DreamKai360 Cloud Xenon Toolchain** está em `.github/workflows/xenon-cloud.yml`. Ele usa GitHub Actions para instalar as dependências, obter o código upstream do Free60Project/libxenon, compilar o compilador Xenon e a biblioteca libXenon, e produzir um ELF de teste.
 
-### Como iniciar
+### Estado validado
+
+A execução [#22 do GitHub Actions](https://github.com/MeiKinosaki/DreamKai360/actions/runs/38333640835) concluiu com sucesso em 13/10/2026. O log confirma que as etapas de construção do compilador Xenon, construção da libXenon e compilação/auditoria do ELF de teste terminaram sem falha.
+
+O artefato `DreamKai360-cloud-xenon-sdk-22` contém:
+- `cloud/dreamkai360_cloud_probe.elf`: ELF PowerPC de 32 bits, big-endian, sem strip.
+- `cloud/dreamkai360_cloud_probe.elf32`: versão ELF32 PowerPC convertida e stripped.
+- `cloud/ELF_AUDIT.txt` e `cloud/SHA256SUMS.txt`: auditoria e hashes.
+
+[Abrir a execução e seus artefatos](https://github.com/MeiKinosaki/DreamKai360/actions/runs/38333640835).
+
+### Como iniciar outra compilação
 
 1. Abra a aba **Actions** deste repositório.
 2. Selecione **DreamKai360 Cloud Xenon Toolchain**.
-3. Clique em **Run workflow** e confirme em **Run workflow**.
-4. Abra a execução mais recente para acompanhar as etapas e consultar os artefatos/logs.
+3. Clique em **Run workflow** e confirme.
+4. Abra a execução para acompanhar as etapas e baixar os artefatos.
 
-A primeira compilação pode levar bastante tempo. Quando o cache do SDK for salvo com sucesso, execuções posteriores poderão reutilizá-lo.
+O cache do SDK pode acelerar execuções seguintes.
 
-### Limites atuais
+### Limitações importantes
 
-- O arquivo `cloud/xenon_probe.c` é apenas um programa mínimo para testar o compilador/linker; **não é o emulador Dreamcast**.
-- O workflow precisa concluir com sucesso para confirmar que a toolchain foi compilada. As primeiras execuções publicadas falharam e ainda precisam de diagnóstico; não há, por enquanto, um ELF validado para download.
-- O código completo do emulador ainda precisa ser integrado a este repositório antes de compilar o DreamKai360 propriamente dito.
+- O programa `cloud/xenon_probe.c` é apenas um teste de compilador/linker; **não é o emulador Dreamcast**.
+- O ELF produzido confirma que a toolchain consegue compilar e vincular um programa de teste PowerPC, mas não comprova execução no console Xbox 360.
+- O código-fonte completo do emulador DreamKai360 ainda precisa ser integrado ao repositório. Portanto, **não existe ainda um `default.xex` do emulador**.
