@@ -1,0 +1,48 @@
+name: DreamKai360 Source Validation
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'cloud/**'
+      - '.github/workflows/cloud-validation.yml'
+      - '.github/workflows/xenon-cloud.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-validation:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install host validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential make
+
+      - name: Run source validation
+        run: bash cloud/validate_source.sh
+
+      - name: Upload validation report
+        if: always()
+        run: |
+          mkdir -p validation-report
+          {
+            echo "Commit: $GITHUB_SHA"
+            echo "Runner: $RUNNER_OS"
+            gcc --version | head -1
+            make --version | head -1
+            bash cloud/validate_source.sh
+          } > validation-report/report.txt 2>&1
+
+      - name: Save report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DreamKai360-source-validation-${{ github.run_number }}
+          path: validation-report/report.txt
+          if-no-files-found: warn
