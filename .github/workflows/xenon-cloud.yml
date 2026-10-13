@@ -51,6 +51,9 @@ jobs:
           git -C third_party-libxenon rev-parse HEAD | tee libxenon-commit.txt
           test -f third_party-libxenon/toolchain/build-xenon-toolchain
           chmod +x third_party-libxenon/toolchain/build-xenon-toolchain
+          test -f third_party-libxenon/toolchain/binutils-2.32.diff
+          test -f third_party-libxenon/toolchain/gcc-16.2.0.diff
+          test -f third_party-libxenon/toolchain/newlib-3.1.0.diff
           export DEVKITXENON="$RUNNER_TEMP/xenon-sdk"
           mkdir -p "$DEVKITXENON"
           cp third_party-libxenon/devkitxenon/rules "$DEVKITXENON/rules"
@@ -77,6 +80,8 @@ jobs:
           export DEVKITXENON="$RUNNER_TEMP/xenon-sdk"
           export PREFIX="$DEVKITXENON"
           export PATH="$DEVKITXENON/bin:$DEVKITXENON/usr/bin:$PATH"
+          # Upstream build script expects the source tree at ../libxenon.
+          ln -sfn "$GITHUB_WORKSPACE/third_party-libxenon" third_party-libxenon/toolchain/../libxenon
           cd third_party-libxenon/toolchain
           ./build-xenon-toolchain libxenon
           find "$DEVKITXENON/usr" -maxdepth 3 -type f | sort | head -120
