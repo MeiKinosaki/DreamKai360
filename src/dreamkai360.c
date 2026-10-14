@@ -51,6 +51,17 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  else if((op&0xf00f)==0x6004){uint8_t v;if(dk_bus_read8(b,c->r[m],&v))return -1;c->r[n]=(uint32_t)(int32_t)(int8_t)v;if(n!=m)c->r[m]++;}
  else if((op&0xf00f)==0x6005){uint16_t v;if(dk_bus_read16(b,c->r[m],&v))return -1;c->r[n]=(uint32_t)(int32_t)(int16_t)v;if(n!=m)c->r[m]+=2;}
  else if((op&0xf00f)==0x3000){if(c->r[n]==c->r[m])c->sr|=1u;else c->sr&=~1u;}
+ else if((op&0xf00f)==0x3002){if(c->r[n]>=c->r[m])c->sr|=1u;else c->sr&=~1u;}
+ else if((op&0xf00f)==0x3003){if((int32_t)c->r[n]>=(int32_t)c->r[m])c->sr|=1u;else c->sr&=~1u;}
+ else if((op&0xf00f)==0x3006){if(c->r[n]>c->r[m])c->sr|=1u;else c->sr&=~1u;}
+ else if((op&0xf00f)==0x3007){if((int32_t)c->r[n]>(int32_t)c->r[m])c->sr|=1u;else c->sr&=~1u;}
+ else if((op&0xf00f)==0x2009)c->r[n]&=c->r[m];
+ else if((op&0xf00f)==0x200a)c->r[n]^=c->r[m];
+ else if((op&0xf00f)==0x200b)c->r[n]|=c->r[m];
+ else if((op&0xf00f)==0x6007)c->r[n]=~c->r[m];
+ else if((op&0xf00f)==0x600b)c->r[n]=0u-c->r[m];
+ else if((op&0xf0ff)==0x4000)c->r[n]<<=1;
+ else if((op&0xf0ff)==0x4001)c->r[n]>>=1;
  else if((op&0xff00)==0x8800){if(c->r[0]==(uint32_t)(int32_t)(int8_t)op)c->sr|=1u;else c->sr&=~1u;}
  else if((op&0xf00f)==0x2008){if((c->r[n]&c->r[m])==0)c->sr|=1u;else c->sr&=~1u;}
  else if((op&0xf00f)==0x2000){if(dk_bus_write8(b,c->r[n],(uint8_t)c->r[m]))return -1;}
