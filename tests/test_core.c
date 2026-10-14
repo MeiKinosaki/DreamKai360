@@ -8,10 +8,10 @@ int main(void){
  assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[1]==42);
  assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[1]==43);
  /* SH-4 register ADD and SUB */
- ram[4]=0x32;ram[5]=0x0c; /* ADD R0,R2 */
- ram[6]=0x32;ram[7]=0x08; /* SUB R0,R2 */
- m.cpu.pc=4;m.cpu.r[2]=7;
- assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[2]==7);
+ ram[4]=0x32;ram[5]=0x3c; /* ADD R3,R2 */
+ ram[6]=0x32;ram[7]=0x38; /* SUB R3,R2 */
+ m.cpu.pc=4;m.cpu.r[2]=7;m.cpu.r[3]=4;
+ assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[2]==11);
  assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[2]==7);
  assert(dk_bus_write32(&m.bus,0x100,0x12345678)==0);
  assert(dk_bus_read32(&m.bus,0x100,&v)==0&&v==0x12345678);
