@@ -39,6 +39,11 @@ jobs:
             tar patch xz-utils file binutils make autoconf automake \
             libtool gawk python3
 
+      - name: Run host regression tests for emulator core
+        run: |
+          set -euxo pipefail
+          make clean test
+
       - name: Restore cached Xenon SDK
         uses: actions/cache@v4
         with:
