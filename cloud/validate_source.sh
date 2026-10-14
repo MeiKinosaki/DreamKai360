@@ -14,8 +14,10 @@ echo "[2/5] Shell syntax checks"
 bash -n cloud/audit_elf.sh
 bash -n cloud/validate_source.sh
 
-echo "[3/5] Host C syntax check (not a Xenon target build)"
-gcc -std=c11 -Wall -Wextra -Werror -fsyntax-only cloud/xenon_probe.c
+echo "[3/5] Host C syntax checks (not a Xenon target build)"
+gcc -std=c99 -Wall -Wextra -Werror -Isrc -fsyntax-only cloud/xenon_probe.c
+gcc -std=c99 -Wall -Wextra -Isrc -fsyntax-only src/dreamkai360.c
+make clean test
 
 echo "[4/5] Workflow and Makefile sanity"
 grep -q 'build-xenon-toolchain' .github/workflows/xenon-cloud.yml
@@ -30,6 +32,6 @@ echo "[5/5] Summary"
 printf '%s\n' \
   'PASS: required inputs exist' \
   'PASS: shell scripts parse' \
-  'PASS: host C syntax is valid' \
+  'PASS: probe and core C syntax checks completed' \\\n  'PASS: host core regression tests completed' \
   'PASS: cloud workflow references SDK build and ELF audit stages' \
   'NOTE: these checks do not prove the Xenon toolchain or emulator builds.'
