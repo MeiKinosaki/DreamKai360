@@ -31,6 +31,17 @@ int main(void){
    assert(dk_aica_mix_tone(&a,1000000u,12000,4,tone)==4);
    assert(a.samples==4 && a.phase<a.sample_rate);
  }
+ /* SH-4 T-bit comparisons and pre-decrement/post-increment memory ops. */
+ { uint32_t word=0; m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x400;
+   m.cpu.r[2]=5; m.cpu.r[3]=5; ram[0x400]=0x32; ram[0x401]=0x30; /* CMP/EQ R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && (m.cpu.sr&1u));
+   m.cpu.r[2]=0x500; m.cpu.r[3]=0x12345678;
+   ram[0x402]=0x22; ram[0x403]=0x36; /* MOV.L R3,@-R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x4fc);
+   assert(dk_bus_read32(&m.bus,0x4fc,&word)==0 && word==0x12345678);
+   m.cpu.r[3]=0x4fc; ram[0x404]=0x62; ram[0x405]=0x36; /* MOV.L @R3+,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x12345678 && m.cpu.r[3]==0x500);
+ }
  /* GD-ROM sector bounds and Maple input state. */
  assert(dk_gdrom_mount(&m.gdrom,disc,sizeof(disc))==0);
  disc[2048]=0x5a;
