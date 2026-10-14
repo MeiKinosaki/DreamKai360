@@ -26,5 +26,25 @@ int main(void){
  assert(fb[10u*640u+10u]==0xffffffffu&&fb[0]==0xff000000u);
  dk_pvr_present(&m.pvr);assert(m.pvr.frames==1);
  dk_irq_raise(&m.irq,DK_IRQ_VBLANK);assert(dk_irq_active(&m.irq)&DK_IRQ_VBLANK);
- free(ram);return 0;
+ /* AICA: phase accumulator remains bounded even above sample rate. */
+ { dk_aica_t a; int16_t tone[4]; dk_aica_reset(&a);
+   assert(dk_aica_mix_tone(&a,1000000u,12000,4,tone)==4);
+   assert(a.samples==4 && a.phase<a.sample_rate);
+ }
+ /* GD-ROM sector bounds and Maple input state. */
+ assert(dk_gdrom_mount(&m.gdrom,disc,sizeof(disc))==0);
+ disc[2048]=0x5a;
+ assert(dk_gdrom_read_sector(&m.gdrom,1,sector)==0 && sector[0]==0x5a);
+ assert(dk_gdrom_read_sector(&m.gdrom,2,sector)!=0);
+ dk_maple_set_state(&m.pad,0x1234,-10,20,-30,40);
+ assert(m.pad.connected && m.pad.buttons==0x1234 && m.pad.lx==-10 && m.pad.ry==40);
+ /* Machine raises the DMA IRQ once on the completion edge. */
+ m.cpu.halted=0; m.cpu.pc=0; m.cpu.branch_pending=0;
+ ram[0]=0x00; ram[1]=0x09; /* NOP */
+ assert(dk_dma_start(&m.dma,0x100,0x300,4)==0);
+ m.irq.raised=0;
+ assert(dk_machine_step(&m,4,2)==0);
+ assert(!m.dma.active && (m.irq.pending&DK_IRQ_DMA) && m.irq.raised==1);
+ assert(dk_machine_step(&m,4,2)==0 && m.irq.raised==1);
+ free(fb); free(ram);return 0;
 }
