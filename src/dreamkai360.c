@@ -44,7 +44,7 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  was_pending=c->branch_pending;if(was_pending)oldtarget=c->branch_target;c->branch_pending=0;c->pc=pc+2;n=(op>>8)&15;m=(op>>4)&15;
  if(op==0x0009){}
  else if((op&0xf000)==0xe000)c->r[n]=(uint32_t)(int32_t)(int8_t)op;
- else if((op&0xf00f)==0x7000)c->r[n]+=(uint32_t)(int32_t)(int8_t)op;
+ else if((op&0xf000)==0x7000)c->r[n]+=(uint32_t)(int32_t)(int8_t)op;
  else if((op&0xf00f)==0x6003)c->r[n]=c->r[m];
  else if((op&0xf00f)==0x300c)c->r[n]+=c->r[m];
  else if((op&0xf00f)==0x3008)c->r[n]-=c->r[m];
