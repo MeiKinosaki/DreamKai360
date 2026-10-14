@@ -46,10 +46,18 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  else if((op&0xf000)==0xe000)c->r[n]=(uint32_t)(int32_t)(int8_t)op;
  else if((op&0xf000)==0x7000)c->r[n]+=(uint32_t)(int32_t)(int8_t)op;
  else if((op&0xf00f)==0x6003)c->r[n]=c->r[m];
+ else if((op&0xf00f)==0x3000){if(c->r[n]==c->r[m])c->sr|=1u;else c->sr&=~1u;}
+ else if((op&0xff00)==0x8800){if(c->r[0]==(uint32_t)(int32_t)(int8_t)op)c->sr|=1u;else c->sr&=~1u;}
+ else if((op&0xf00f)==0x2008){if((c->r[n]&c->r[m])==0)c->sr|=1u;else c->sr&=~1u;}
+ else if((op&0xf0ff)==0x4010){c->r[n]--;if(c->r[n]==0)c->sr|=1u;else c->sr&=~1u;}
+ else if(op==0x0008)c->sr&=~1u;
+ else if(op==0x0018)c->sr|=1u;
  else if((op&0xf00f)==0x300c)c->r[n]+=c->r[m];
  else if((op&0xf00f)==0x3008)c->r[n]-=c->r[m];
  else if((op&0xf00f)==0x2002){if(dk_bus_write32(b,c->r[n],c->r[m]))return -1;}
+ else if((op&0xf00f)==0x2006){c->r[n]-=4;if(dk_bus_write32(b,c->r[n],c->r[m]))return -1;}
  else if((op&0xf00f)==0x6002){uint32_t v;if(dk_bus_read32(b,c->r[m],&v))return -1;c->r[n]=v;}
+ else if((op&0xf00f)==0x6006){uint32_t v;if(dk_bus_read32(b,c->r[m],&v))return -1;c->r[n]=v;if(n!=m)c->r[m]+=4;}
  else if((op&0xf000)==0xa000)branch(c,pc+4+((int32_t)(int16_t)(op<<4)>>3));
  else if((op&0xff00)==0x8900){if(c->sr&1)branch(c,pc+4+((int8_t)op*2));}
  else if((op&0xff00)==0x8b00){if(!(c->sr&1))branch(c,pc+4+((int8_t)op*2));}
