@@ -47,12 +47,12 @@ int main(void){
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x12345678 && m.cpu.r[3]==0x500);
    /* Signed byte/word loads and byte/word stores. */
    m.cpu.r[2]=0x520; m.cpu.r[3]=0x80;
-   ram[0x406]=0x23; ram[0x407]=0x20; /* MOV.B R3,@R2 */
+   ram[0x406]=0x22; ram[0x407]=0x30; /* MOV.B R3,@R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && ram[0x520]==0x80);
    m.cpu.r[3]=0x520; ram[0x408]=0x62; ram[0x409]=0x30; /* MOV.B @R3,R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffffff80u);
    m.cpu.r[2]=0x522; m.cpu.r[3]=0x8001;
-   ram[0x40a]=0x23; ram[0x40b]=0x21; /* MOV.W R3,@R2 */
+   ram[0x40a]=0x22; ram[0x40b]=0x31; /* MOV.W R3,@R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && ram[0x522]==0x80 && ram[0x523]==0x01);
    m.cpu.r[3]=0x522; ram[0x40c]=0x62; ram[0x40d]=0x31; /* MOV.W @R3,R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffff8001u);
