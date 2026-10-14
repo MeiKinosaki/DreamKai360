@@ -7,6 +7,12 @@ int main(void){
  ram[0]=0xe1;ram[1]=0x2a;ram[2]=0x71;ram[3]=0x01;
  assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[1]==42);
  assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[1]==43);
+ /* SH-4 register ADD and SUB */
+ ram[4]=0x32;ram[5]=0x0c; /* ADD R0,R2 */
+ ram[6]=0x32;ram[7]=0x08; /* SUB R0,R2 */
+ m.cpu.pc=4;m.cpu.r[2]=7;
+ assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[2]==7);
+ assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[2]==7);
  assert(dk_bus_write32(&m.bus,0x100,0x12345678)==0);
  assert(dk_bus_read32(&m.bus,0x100,&v)==0&&v==0x12345678);
  dk_mmu_reset(&mmu);mmu.enabled=1;assert(dk_mmu_map(&mmu,0,0x1000,0x2000,1,1)==0);
