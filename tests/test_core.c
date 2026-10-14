@@ -26,6 +26,10 @@ int main(void){
  assert(fb[10u*640u+10u]==0xffffffffu&&fb[0]==0xff000000u);
  dk_pvr_present(&m.pvr);assert(m.pvr.frames==1);
  dk_irq_raise(&m.irq,DK_IRQ_VBLANK);assert(dk_irq_active(&m.irq)&DK_IRQ_VBLANK);
+ dk_irq_ack(&m.irq,DK_IRQ_VBLANK);assert(!(dk_irq_active(&m.irq)&DK_IRQ_VBLANK));
+ dk_scheduler_schedule(&m.scheduler,5);assert(!dk_scheduler_due(&m.scheduler));
+ dk_scheduler_advance(&m.scheduler,4);assert(!dk_scheduler_due(&m.scheduler));
+ dk_scheduler_advance(&m.scheduler,1);assert(dk_scheduler_due(&m.scheduler));
  /* AICA: phase accumulator remains bounded even above sample rate. */
  { dk_aica_t a; int16_t tone[4]; dk_aica_reset(&a);
    assert(dk_aica_mix_tone(&a,1000000u,12000,4,tone)==4);
