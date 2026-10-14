@@ -23,9 +23,9 @@ typedef struct {
 typedef struct { uint32_t src,dst,length,done; uint8_t active,error; } dk_dma_t;
 typedef struct { uint32_t pending,mask; uint64_t raised; } dk_irq_t;
 typedef struct { uint64_t now,deadline; uint8_t armed; } dk_scheduler_t;
-typedef struct { uint32_t width,height,frames; uint8_t enabled,vblank; } dk_pvr2_t;
-typedef struct { uint32_t sample_rate,samples; uint8_t enabled; } dk_aica_t;
-typedef struct { uint32_t lba,sectors; uint8_t ready,reading; } dk_gdrom_t;
+typedef struct { uint32_t width,height,frames; uint8_t enabled,vblank; uint32_t *framebuffer; size_t capacity; } dk_pvr2_t;
+typedef struct { uint32_t sample_rate,samples; uint8_t enabled; int16_t mix[2048]; uint32_t phase; } dk_aica_t;
+typedef struct { uint32_t lba,sectors; uint8_t ready,reading; const uint8_t *image; size_t image_size; } dk_gdrom_t;
 typedef struct { uint16_t buttons; int8_t lx,ly,rx,ry; uint8_t connected; } dk_maple_t;
 typedef struct { dk_mmu_t mmu; dk_bus_t bus; dk_sh4_t cpu; dk_dma_t dma; dk_irq_t irq; dk_scheduler_t scheduler; dk_pvr2_t pvr; dk_aica_t aica; dk_gdrom_t gdrom; dk_maple_t pad; uint8_t *ram; } dk_machine_t;
 
@@ -49,10 +49,18 @@ uint32_t dk_irq_active(const dk_irq_t *i);
 void dk_scheduler_advance(dk_scheduler_t *s,uint64_t cycles);
 void dk_scheduler_schedule(dk_scheduler_t *s,uint64_t delay);
 void dk_pvr_reset(dk_pvr2_t *p);
+int dk_pvr_attach_framebuffer(dk_pvr2_t *p,uint32_t *pixels,size_t capacity);
+int dk_pvr_clear(dk_pvr2_t *p,uint32_t rgba);
+int dk_pvr_fill_rect(dk_pvr2_t *p,int x,int y,int w,int h,uint32_t rgba);
+void dk_pvr_present(dk_pvr2_t *p);
 int dk_pvr_set_mode(dk_pvr2_t *p,uint32_t w,uint32_t h);
 void dk_aica_reset(dk_aica_t *a);
+size_t dk_aica_mix_tone(dk_aica_t *a,uint32_t frequency,int16_t amplitude,size_t count,int16_t *out);
 void dk_gdrom_reset(dk_gdrom_t *g);
+int dk_gdrom_mount(dk_gdrom_t *g,const uint8_t *image,size_t bytes);
+int dk_gdrom_read_sector(dk_gdrom_t *g,uint32_t lba,uint8_t out[2048]);
 void dk_maple_reset(dk_maple_t *p);
+void dk_maple_set_state(dk_maple_t *p,uint16_t buttons,int8_t lx,int8_t ly,int8_t rx,int8_t ry);
 int dk_machine_init(dk_machine_t *m,uint8_t *ram,size_t size,uint32_t entry);
 int dk_machine_step(dk_machine_t *m,uint32_t dma_budget,uint32_t cycles);
 #endif
