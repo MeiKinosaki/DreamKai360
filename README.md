@@ -1,32 +1,30 @@
 # DreamKai360
-Emulador de Dreamcast para Xbox 360.
+Emulador experimental de Dreamcast para Xbox 360 RGH.
 
 ## Toolchain Xenon na nuvem
 
-O workflow **DreamKai360 Cloud Xenon Toolchain** está em `.github/workflows/xenon-cloud.yml`. Ele usa GitHub Actions para instalar as dependências, obter o código upstream do Free60Project/libxenon, compilar o compilador Xenon e a biblioteca libXenon, e produzir um ELF de teste.
+O workflow **DreamKai360 Cloud Xenon Toolchain** em `.github/workflows/xenon-cloud.yml` compila a toolchain Free60/libXenon e gera um ELF de teste. A execução validada anteriormente é [GitHub Actions #22](https://github.com/MeiKinosaki/DreamKai360/actions/runs/38333640835). O ELF dessa execução é apenas uma sonda de toolchain, não o emulador.
 
-### Estado validado
+## v1.9b — integração inicial do núcleo
 
-A execução [#22 do GitHub Actions](https://github.com/MeiKinosaki/DreamKai360/actions/runs/38333640835) concluiu com sucesso em 13/10/2026. O log confirma que as etapas de construção do compilador Xenon, construção da libXenon e compilação/auditoria do ELF de teste terminaram sem falha.
+Agora o repositório inclui `src/dreamkai360.h` e `src/dreamkai360.c`, um protótipo C integrado com:
+- CPU SH-4 interpretada, com subconjunto pequeno de instruções, PC/ciclos e delay slots básico;
+- MMU/TLB experimental de 64 entradas, ASID e permissões;
+- barramento de RAM e acessos big-endian de 8/16/32 bits, mais janelas básicas de registradores;
+- DMA por orçamento, IRQ e scheduler;
+- estruturas iniciais para PVR2, AICA, GD-ROM e controle Maple;
+- teste host em `tests/test_core.c`, executado pelo alvo `make test` e pelo workflow.
 
-O artefato `DreamKai360-cloud-xenon-sdk-22` contém:
-- `cloud/dreamkai360_cloud_probe.elf`: ELF PowerPC de 32 bits, big-endian, sem strip.
-- `cloud/dreamkai360_cloud_probe.elf32`: versão ELF32 PowerPC convertida e stripped.
-- `cloud/ELF_AUDIT.txt` e `cloud/SHA256SUMS.txt`: auditoria e hashes.
+### Limitações conhecidas
 
-[Abrir a execução e seus artefatos](https://github.com/MeiKinosaki/DreamKai360/actions/runs/38333640835).
+Este núcleo **não é ainda um emulador funcional de Dreamcast**. O SH-4 implementa apenas poucas instruções e não tem todos os registradores especiais/exceções; MMU, mapa físico, alinhamento e MMIO precisam de revisão de precisão; PVR2 não rasteriza gráficos, AICA não sintetiza áudio, GD-ROM não lê imagens de disco e Maple ainda não implementa o protocolo. Também faltam BIOS/boot, carregamento de jogos, sincronização completa de periféricos, integração de vídeo/áudio da libXenon e geração de `default.xex`.
 
-### Como iniciar outra compilação
+As porcentagens são metas de implementação, não garantias de funcionamento. O workflow deve passar primeiro nos testes host; só depois se valida a compilação de um executável para Xenon e, por fim, testes em hardware real.
 
-1. Abra a aba **Actions** deste repositório.
-2. Selecione **DreamKai360 Cloud Xenon Toolchain**.
-3. Clique em **Run workflow** e confirme.
-4. Abra a execução para acompanhar as etapas e baixar os artefatos.
+## Compilar testes no host
 
-O cache do SDK pode acelerar execuções seguintes.
+```sh
+make clean test
+```
 
-### Limitações importantes
-
-- O programa `cloud/xenon_probe.c` é apenas um teste de compilador/linker; **não é o emulador Dreamcast**.
-- O ELF produzido confirma que a toolchain consegue compilar e vincular um programa de teste PowerPC, mas não comprova execução no console Xbox 360.
-- O código-fonte completo do emulador DreamKai360 ainda precisa ser integrado ao repositório. Portanto, **não existe ainda um `default.xex` do emulador**.
+O executável criado é apenas um teste nativo de desenvolvimento, não um build para Xbox 360.
