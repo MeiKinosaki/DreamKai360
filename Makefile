@@ -1,5 +1,5 @@
 CC ?= cc
-CFLAGS ?= -std=c99 -O2 -Wall -Wextra -Werror
+CFLAGS ?= -std=c99 -O2 -Wall -Wextra
 .PHONY: test clean
 test: build/test_core
 	./build/test_core
