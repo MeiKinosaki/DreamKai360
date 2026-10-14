@@ -57,6 +57,25 @@ int main(void){
    m.cpu.r[3]=0x522; ram[0x40c]=0x62; ram[0x40d]=0x31; /* MOV.W @R3,R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffff8001u);
  }
+ /* SH-4 unsigned/signed compares, logic, NOT/NEG and shifts. */
+ { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x440;
+   m.cpu.r[2]=7; m.cpu.r[3]=5;
+   ram[0x440]=0x32; ram[0x441]=0x02; /* CMP/HS R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && (m.cpu.sr&1u));
+   ram[0x442]=0x32; ram[0x443]=0x07; /* CMP/GT R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && (m.cpu.sr&1u));
+   m.cpu.r[2]=0xf0; m.cpu.r[3]=0x0f;
+   ram[0x444]=0x22; ram[0x445]=0x09; /* AND R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x00);
+   m.cpu.r[2]=0xf0; ram[0x446]=0x22; ram[0x447]=0x0b; /* OR R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xff);
+   ram[0x448]=0x62; ram[0x449]=0x27; /* NOT R2,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==~0xffu);
+   m.cpu.r[2]=8; ram[0x44a]=0x42; ram[0x44b]=0x00; /* SHLL R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==16);
+   ram[0x44c]=0x42; ram[0x44d]=0x01; /* SHLR R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==8);
+ }
  /* GD-ROM sector bounds and Maple input state. */
  assert(dk_gdrom_mount(&m.gdrom,disc,sizeof(disc))==0);
  disc[2048]=0x5a;
