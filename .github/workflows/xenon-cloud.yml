@@ -6,6 +6,9 @@ on:
     paths:
       - '.github/workflows/xenon-cloud.yml'
       - 'cloud/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'Makefile'
       - 'README.md'
 
 permissions:
