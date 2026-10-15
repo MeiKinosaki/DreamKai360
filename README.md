@@ -1,21 +1,21 @@
 # DreamKai360
 Emulador experimental de Dreamcast para Xbox 360 RGH.
 
-## v1.10b — expansão do núcleo e testes de regressão
+## v1.11b — desvios SH-4 portáveis e testes de slot de atraso
 
 O projeto contém um núcleo C experimental em `src/dreamkai360.h` e `src/dreamkai360.c`, com:
-- CPU SH-4 interpretada e parcial: operações lógicas, comparações, loads/stores, SWAP, EXTU/EXTS, XTRCT, MOVT, TST, DT, SHAL/SHAR, rotações, deslocamentos e aritmética imediata;
+- CPU SH-4 interpretada e parcial: operações lógicas, comparações, loads/stores, SWAP, EXTU/EXTS, XTRCT, MOVT, TST, DT, SHAL/SHAR, rotações, deslocamentos, aritmética imediata e desvios BRA/BT/BF com extensão de sinal explícita e slot de atraso experimental;
 - MMU/TLB experimental de 64 entradas, ASID e permissões;
 - barramento big-endian de 8/16/32 bits e janelas MMIO experimentais;
 - DMA por orçamento, IRQ e scheduler;
 - framebuffer experimental PVR2 com limpeza, retângulos preenchidos e contagem de quadros;
 - mixer de tom de teste, leitura de setores de 2048 bytes de imagem GD-ROM montada em memória e estado básico de entrada Maple.
 
-Os testes de regressão em `tests/test_core.c` cobrem instruções SH-4 selecionadas, MMIO AICA/PVR, permissões da MMU, framebuffer, DMA/IRQ e limites do scheduler.
+Os testes de regressão em `tests/test_core.c` cobrem instruções SH-4 selecionadas, desvios positivos/negativos e slot de atraso, MMIO AICA/PVR, permissões da MMU, framebuffer, DMA/IRQ e limites do scheduler.
 
 ## Toolchain Xenon na nuvem
 
-O workflow **DreamKai360 Cloud Xenon Toolchain** em `.github/workflows/xenon-cloud.yml` executa os testes host, constrói a toolchain Free60/libXenon e tenta compilar um ELF de teste que vincula o núcleo. A execução #63 passou, mas corresponde a um commit anterior às últimas mudanças; consulte [GitHub Actions](https://github.com/MeiKinosaki/DreamKai360/actions) para os resultados atualizados.
+O workflow **DreamKai360 Cloud Xenon Toolchain** em `.github/workflows/xenon-cloud.yml` executa os testes host, constrói a toolchain Free60/libXenon e tenta compilar um ELF de teste que vincula o núcleo. A execução #83 passou incluindo testes host, construção da toolchain Free60/libXenon, runtime e compilação/auditoria do ELF de teste. Isso não equivale a um `default.xex` nem a teste em console; consulte [GitHub Actions](https://github.com/MeiKinosaki/DreamKai360/actions) para a execução mais recente.
 
 O ELF de teste é uma sonda de compilação e não comprova inicialização no Xbox 360.
 
