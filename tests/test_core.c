@@ -106,6 +106,25 @@ int main(void){
    ram[0x44c]=0x42; ram[0x44d]=0x01; /* SHLR R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==8);
  }
+ /* SH-4 data transforms: SWAP, zero/sign extension and XTRCT. */
+ { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x460;
+   m.cpu.r[2]=0x12345678u; m.cpu.r[3]=0x89abcdefu;
+   ram[0x460]=0x62; ram[0x461]=0x28; /* SWAP.B R2,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x12345687u);
+   ram[0x462]=0x62; ram[0x463]=0x29; /* SWAP.W R2,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x56871234u);
+   m.cpu.r[3]=0x12345680u; ram[0x464]=0x63; ram[0x465]=0x2c; /* EXTU.B R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x80u);
+   ram[0x466]=0x63; ram[0x467]=0x2e; /* EXTS.B R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffffff80u);
+   m.cpu.r[3]=0x12348001u; ram[0x468]=0x63; ram[0x469]=0x2d; /* EXTU.W R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x8001u);
+   ram[0x46a]=0x63; ram[0x46b]=0x2f; /* EXTS.W R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffff8001u);
+   m.cpu.r[2]=0x11223344u; m.cpu.r[3]=0xaabbccddu;
+   ram[0x46c]=0x22; ram[0x46d]=0x3d; /* XTRCT R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xccdd1122u);
+ }
  /* GD-ROM sector bounds and Maple input state. */
  assert(dk_gdrom_mount(&m.gdrom,disc,sizeof(disc))==0);
  disc[2048]=0x5a;
