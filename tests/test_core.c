@@ -34,6 +34,10 @@ int main(void){
    assert(dk_mmu_translate(&mmu,0x3000,0,1,&p)==0&&p==0x4000);
    assert(dk_mmu_map(&mmu,2,0x6000,0x7000,1,0)==0);
    assert(dk_mmu_translate(&mmu,0x6000,0,1,&p)!=0); /* non-executable page faults */
+   mmu.asid=1;
+   assert(dk_mmu_translate(&mmu,0x1234,0,0,&p)!=0); /* ASID mismatch */
+   mmu.asid=0;
+   assert(dk_mmu_translate(&mmu,0x1234,0,0,&p)==0&&p==0x2234);
    assert(dk_mmu_translate(&mmu,0x5000,0,0,&p)!=0); /* unmapped page faults */
  }
  dk_dma_reset(&m.dma);assert(dk_dma_start(&m.dma,0x100,0x200,4)==0);
@@ -45,6 +49,7 @@ int main(void){
  assert(dk_dma_step(&m.dma,&m.bus,1)==0);
  assert(m.dma.error && !m.dma.active && m.dma.done==1);
  dk_pvr_reset(&m.pvr);assert(dk_pvr_set_mode(&m.pvr,640,480)==0);
+ assert(dk_pvr_set_mode(&m.pvr,0,480)!=0 && dk_pvr_set_mode(&m.pvr,2048,480)!=0);
  assert(dk_pvr_attach_framebuffer(&m.pvr,fb,640u*480u)==0);
  assert(dk_pvr_clear(&m.pvr,0xff000000u)==0);
  assert(dk_pvr_fill_rect(&m.pvr,10,10,4,4,0xffffffffu)==0);
@@ -112,6 +117,13 @@ int main(void){
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==16);
    ram[0x44c]=0x42; ram[0x44d]=0x01; /* SHLR R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==8);
+ }
+ /* SH-4 single-bit shifts copy the outgoing bit into T. */
+ { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x4a0;
+   m.cpu.r[2]=0x80000000u; ram[0x4a0]=0x42; ram[0x4a1]=0x00; /* SHLL R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0u && (m.cpu.sr&1u));
+   m.cpu.r[2]=1u; ram[0x4a2]=0x42; ram[0x4a3]=0x01; /* SHLR R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0u && (m.cpu.sr&1u));
  }
  /* SH-4 data transforms: SWAP, zero/sign extension and XTRCT. */
  { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x460;
