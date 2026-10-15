@@ -113,13 +113,13 @@ int main(void){
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x12347856u);
    ram[0x462]=0x62; ram[0x463]=0x29; /* SWAP.W R2,R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x78561234u);
-   m.cpu.r[3]=0x12345680u; ram[0x464]=0x63; ram[0x465]=0x2c; /* EXTU.B R3,R2 */
+   m.cpu.r[3]=0x12345680u; ram[0x464]=0x62; ram[0x465]=0x3c; /* EXTU.B R3,R2 (0x623c) */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x80u);
-   ram[0x466]=0x63; ram[0x467]=0x2e; /* EXTS.B R3,R2 */
+   ram[0x466]=0x62; ram[0x467]=0x3e; /* EXTS.B R3,R2 (0x623e) */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffffff80u);
-   m.cpu.r[3]=0x12348001u; ram[0x468]=0x63; ram[0x469]=0x2d; /* EXTU.W R3,R2 */
+   m.cpu.r[3]=0x12348001u; ram[0x468]=0x62; ram[0x469]=0x3d; /* EXTU.W R3,R2 (0x623d) */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x8001u);
-   ram[0x46a]=0x63; ram[0x46b]=0x2f; /* EXTS.W R3,R2 */
+   ram[0x46a]=0x62; ram[0x46b]=0x3f; /* EXTS.W R3,R2 (0x623f) */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffff8001u);
    m.cpu.r[2]=0x11223344u; m.cpu.r[3]=0xaabbccddu;
    ram[0x46c]=0x22; ram[0x46d]=0x3d; /* XTRCT R3,R2 */
