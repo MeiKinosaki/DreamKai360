@@ -26,13 +26,17 @@ int dk_bus_read8(dk_bus_t*b,uint32_t a,uint8_t*v){uint32_t p;if(!b||!v||phys(b,a
  if(p>=0x00700000u&&p<0x00702000u)*v=((uint8_t*)b->aica)[p-0x00700000u];
  else if(p>=0x11000000u&&p<0x11000400u)*v=((uint8_t*)b->pvr)[p-0x11000000u];
  else if(p<b->ram_size&&b->ram)*v=b->ram[p];
- else return -1;b->reads++;return 0;}
+ else return -1;
+ b->reads++;
+ return 0;}
 int dk_bus_write8(dk_bus_t*b,uint32_t a,uint8_t v){uint32_t p;if(!b||phys(b,a,1,0,&p))return -1;
  /* Match read priority so MMIO never silently aliases RAM. */
  if(p>=0x00700000u&&p<0x00702000u)((uint8_t*)b->aica)[p-0x00700000u]=v;
  else if(p>=0x11000000u&&p<0x11000400u)((uint8_t*)b->pvr)[p-0x11000000u]=v;
  else if(p<b->ram_size&&b->ram)b->ram[p]=v;
- else return -1;b->writes++;return 0;}
+ else return -1;
+ b->writes++;
+ return 0;}
 int dk_bus_read16(dk_bus_t*b,uint32_t a,uint16_t*v){uint8_t x,y;if((a&1)||!v||dk_bus_read8(b,a,&x)||dk_bus_read8(b,a+1,&y))return -1;*v=(uint16_t)(((uint16_t)x<<8)|y);return 0;}
 int dk_bus_write16(dk_bus_t*b,uint32_t a,uint16_t v){return (a&1)?-1:(dk_bus_write8(b,a,(uint8_t)(v>>8))||dk_bus_write8(b,a+1,(uint8_t)v)?-1:0);}
 int dk_bus_read32(dk_bus_t*b,uint32_t a,uint32_t*v){uint16_t x,y;if((a&3)||!v||dk_bus_read16(b,a,&x)||dk_bus_read16(b,a+2,&y))return -1;*v=((uint32_t)x<<16)|y;return 0;}
@@ -41,7 +45,8 @@ void dk_sh4_reset(dk_sh4_t*c,uint32_t pc){if(c){memset(c,0,sizeof(*c));c->pc=pc;
 static void branch(dk_sh4_t*c,uint32_t target){c->branch_target=target;c->branch_pending=1;}
 int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  uint16_t op;uint32_t pc,oldtarget=0;uint8_t was_pending;unsigned n,m;
- if(!c||!b||c->halted)return -1;pc=c->pc;
+ if(!c||!b||c->halted)return -1;
+ pc=c->pc;
  if(dk_bus_read16(b,pc,&op)){c->halted=1;return -1;}
  was_pending=c->branch_pending;if(was_pending)oldtarget=c->branch_target;c->branch_pending=0;c->pc=pc+2;n=(op>>8)&15;m=(op>>4)&15;
  if(op==0x0009){}
@@ -125,7 +130,8 @@ int dk_pvr_fill_rect(dk_pvr2_t*p,int x,int y,int w,int h,uint32_t rgba){
  if(!p||!p->framebuffer||w<=0||h<=0||p->capacity<(size_t)p->width*p->height)return -1;
  rx1=(int64_t)x+(int64_t)w;ry1=(int64_t)y+(int64_t)h;
  x0=x<0?0:x;y0=y<0?0:y;x1=(int)p->width;y1=(int)p->height;
- if(rx1<x1)x1=(int)rx1;if(ry1<y1)y1=(int)ry1;
+ if(rx1<x1)x1=(int)rx1;
+ if(ry1<y1)y1=(int)ry1;
  if(x0>=x1||y0>=y1)return 0;
  for(yy=y0;yy<y1;yy++)for(xx=x0;xx<x1;xx++)p->framebuffer[(size_t)yy*p->width+(size_t)xx]=rgba;
  return 0;
