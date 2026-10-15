@@ -123,6 +123,13 @@ int main(void){
    ram[0x44c]=0x42; ram[0x44d]=0x01; /* SHLR R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==8);
  }
+ /* SH-4 arithmetic shifts preserve sign and report the shifted bit. */
+ { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x4b0;
+   m.cpu.r[2]=0x80000001u; ram[0x4b0]=0x42; ram[0x4b1]=0x21; /* SHAR R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xc0000000u && (m.cpu.sr&1u));
+   m.cpu.r[2]=0x40000000u; ram[0x4b2]=0x42; ram[0x4b3]=0x20; /* SHAL R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x80000000u && !(m.cpu.sr&1u));
+ }
  /* SH-4 single-bit shifts copy the outgoing bit into T. */
  { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x4a0;
    m.cpu.r[2]=0x80000000u; ram[0x4a0]=0x42; ram[0x4a1]=0x00; /* SHLL R2 */
