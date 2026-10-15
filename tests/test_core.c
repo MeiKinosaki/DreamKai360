@@ -189,6 +189,23 @@ int main(void){
    ram[0x48c]=0x42; ram[0x48d]=0x19; /* SHLR8 R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x00345678u);
  }
+ /* SH-4 BRA and conditional branch displacement sign-extension regressions. */
+ { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x600; m.cpu.sr&=~1u;
+   ram[0x600]=0xa0; ram[0x601]=0x02; /* BRA +2 => target PC 0x608 after delay slot */
+   ram[0x602]=0x00; ram[0x603]=0x09; /* delay-slot NOP */
+   ram[0x604]=0x00; ram[0x605]=0x09;
+   ram[0x606]=0x00; ram[0x607]=0x09;
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.pc==0x602 && m.cpu.branch_pending);
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.pc==0x608 && !m.cpu.branch_pending);
+   m.cpu.pc=0x620; m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.sr|=1u;
+   ram[0x620]=0x89; ram[0x621]=0xfe; /* BT -2 => PC+4-4 = 0x620 */
+   ram[0x622]=0x00; ram[0x623]=0x09;
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.branch_pending);
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.pc==0x620 && !m.cpu.branch_pending);
+   m.cpu.pc=0x640; m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.sr&=~1u;
+   ram[0x640]=0x8b; ram[0x641]=0x01; /* BF not taken when T=0 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && !m.cpu.branch_pending && m.cpu.pc==0x642);
+ }
  /* GD-ROM sector bounds, malformed sizes and Maple input state. */
  assert(dk_gdrom_mount(&m.gdrom,disc,sizeof(disc)-1u)!=0);
 #if SIZE_MAX > UINT32_MAX
