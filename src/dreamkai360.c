@@ -149,7 +149,20 @@ int dk_pvr_fill_rect(dk_pvr2_t*p,int x,int y,int w,int h,uint32_t rgba){
 }
 void dk_pvr_present(dk_pvr2_t*p){if(p){p->frames++;p->vblank=1;}}
 void dk_aica_reset(dk_aica_t*a){if(a){memset(a,0,sizeof(*a));a->sample_rate=44100;}}
-size_t dk_aica_mix_tone(dk_aica_t*a,uint32_t frequency,int16_t amplitude,size_t count,int16_t*out){size_t i;if(!a||!out||!a->sample_rate)return 0;if(count>2048)count=2048;for(i=0;i<count;i++){a->phase=(uint32_t)(((uint64_t)a->phase+(uint64_t)frequency)%a->sample_rate);out[i]=(a->phase<a->sample_rate/2)?amplitude:(int16_t)(-(int32_t)amplitude);a->mix[i]=out[i];}a->samples+=(uint32_t)count;return count;}
+size_t dk_aica_mix_tone(dk_aica_t*a,uint32_t frequency,int16_t amplitude,size_t count,int16_t*out){
+ size_t i;int16_t opposite;
+ if(!a||!out||!a->sample_rate)return 0;
+ if(count>2048)count=2048;
+ /* Negating INT16_MIN is not representable in int16_t; saturate symmetrically. */
+ opposite=amplitude==INT16_MIN?INT16_MAX:(int16_t)(-(int32_t)amplitude);
+ for(i=0;i<count;i++){
+  a->phase=(uint32_t)(((uint64_t)a->phase+(uint64_t)frequency)%a->sample_rate);
+  out[i]=(a->phase<a->sample_rate/2)?amplitude:opposite;
+  a->mix[i]=out[i];
+ }
+ a->samples+=(uint32_t)count;
+ return count;
+}
 void dk_gdrom_reset(dk_gdrom_t*g){if(g){memset(g,0,sizeof(*g));g->ready=1;}}
 int dk_gdrom_mount(dk_gdrom_t*g,const uint8_t*image,size_t bytes){
  if(!g||!image||!bytes||bytes%2048||bytes/2048>UINT32_MAX)return -1;
