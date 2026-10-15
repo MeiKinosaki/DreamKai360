@@ -22,14 +22,16 @@ static int phys(dk_bus_t *b,uint32_t va,int wr,int ex,uint32_t *p){
 }
 void dk_bus_init(dk_bus_t *b,uint8_t *r,size_t n,dk_mmu_t *m){if(!b)return;memset(b,0,sizeof(*b));b->ram=r;b->ram_size=n;b->mmu=m;}
 int dk_bus_read8(dk_bus_t*b,uint32_t a,uint8_t*v){uint32_t p;if(!b||!v||phys(b,a,0,0,&p))return -1;
- if(p<b->ram_size&&b->ram){*v=b->ram[p];b->reads++;return 0;}
- if(p>=0x11000000u&&p<0x11000400u)*v=((uint8_t*)b->pvr)[p-0x11000000u];
- else if(p>=0x00700000u&&p<0x00702000u)*v=((uint8_t*)b->aica)[p-0x00700000u];
+ /* Device windows must take precedence over the broad host RAM test range. */
+ if(p>=0x00700000u&&p<0x00702000u)*v=((uint8_t*)b->aica)[p-0x00700000u];
+ else if(p>=0x11000000u&&p<0x11000400u)*v=((uint8_t*)b->pvr)[p-0x11000000u];
+ else if(p<b->ram_size&&b->ram)*v=b->ram[p];
  else return -1;b->reads++;return 0;}
 int dk_bus_write8(dk_bus_t*b,uint32_t a,uint8_t v){uint32_t p;if(!b||phys(b,a,1,0,&p))return -1;
- if(p<b->ram_size&&b->ram){b->ram[p]=v;b->writes++;return 0;}
- if(p>=0x11000000u&&p<0x11000400u)((uint8_t*)b->pvr)[p-0x11000000u]=v;
- else if(p>=0x00700000u&&p<0x00702000u)((uint8_t*)b->aica)[p-0x00700000u]=v;
+ /* Match read priority so MMIO never silently aliases RAM. */
+ if(p>=0x00700000u&&p<0x00702000u)((uint8_t*)b->aica)[p-0x00700000u]=v;
+ else if(p>=0x11000000u&&p<0x11000400u)((uint8_t*)b->pvr)[p-0x11000000u]=v;
+ else if(p<b->ram_size&&b->ram)b->ram[p]=v;
  else return -1;b->writes++;return 0;}
 int dk_bus_read16(dk_bus_t*b,uint32_t a,uint16_t*v){uint8_t x,y;if((a&1)||!v||dk_bus_read8(b,a,&x)||dk_bus_read8(b,a+1,&y))return -1;*v=(uint16_t)(((uint16_t)x<<8)|y);return 0;}
 int dk_bus_write16(dk_bus_t*b,uint32_t a,uint16_t v){return (a&1)?-1:(dk_bus_write8(b,a,(uint8_t)(v>>8))||dk_bus_write8(b,a+1,(uint8_t)v)?-1:0);}
@@ -99,7 +101,16 @@ void dk_pvr_reset(dk_pvr2_t*p){if(p){memset(p,0,sizeof(*p));p->width=640;p->heig
 int dk_pvr_set_mode(dk_pvr2_t*p,uint32_t w,uint32_t h){if(!p||!w||!h||w>1024||h>1024)return -1;p->width=w;p->height=h;return 0;}
 int dk_pvr_attach_framebuffer(dk_pvr2_t*p,uint32_t*pixels,size_t capacity){if(!p||!pixels||capacity<(size_t)p->width*p->height)return -1;p->framebuffer=pixels;p->capacity=capacity;return 0;}
 int dk_pvr_clear(dk_pvr2_t*p,uint32_t rgba){size_t i,n;if(!p||!p->framebuffer)return -1;n=(size_t)p->width*p->height;if(n>p->capacity)return -1;for(i=0;i<n;i++)p->framebuffer[i]=rgba;return 0;}
-int dk_pvr_fill_rect(dk_pvr2_t*p,int x,int y,int w,int h,uint32_t rgba){int x0,y0,x1,y1,yy,xx;if(!p||!p->framebuffer||w<=0||h<=0||p->capacity<(size_t)p->width*p->height)return -1;x0=x<0?0:x;y0=y<0?0:y;x1=(int)p->width;if(w<x1-x)x1=x+w;y1=(int)p->height;if(h<y1-y)y1=y+h;if(x0>=x1||y0>=y1)return 0;for(yy=y0;yy<y1;yy++)for(xx=x0;xx<x1;xx++)p->framebuffer[(size_t)yy*p->width+(size_t)xx]=rgba;return 0;}
+int dk_pvr_fill_rect(dk_pvr2_t*p,int x,int y,int w,int h,uint32_t rgba){
+ int x0,y0,x1,y1,yy,xx;int64_t rx1,ry1;
+ if(!p||!p->framebuffer||w<=0||h<=0||p->capacity<(size_t)p->width*p->height)return -1;
+ rx1=(int64_t)x+(int64_t)w;ry1=(int64_t)y+(int64_t)h;
+ x0=x<0?0:x;y0=y<0?0:y;x1=(int)p->width;y1=(int)p->height;
+ if(rx1<x1)x1=(int)rx1;if(ry1<y1)y1=(int)ry1;
+ if(x0>=x1||y0>=y1)return 0;
+ for(yy=y0;yy<y1;yy++)for(xx=x0;xx<x1;xx++)p->framebuffer[(size_t)yy*p->width+(size_t)xx]=rgba;
+ return 0;
+}
 void dk_pvr_present(dk_pvr2_t*p){if(p){p->frames++;p->vblank=1;}}
 void dk_aica_reset(dk_aica_t*a){if(a){memset(a,0,sizeof(*a));a->sample_rate=44100;}}
 size_t dk_aica_mix_tone(dk_aica_t*a,uint32_t frequency,int16_t amplitude,size_t count,int16_t*out){size_t i;if(!a||!out||!a->sample_rate)return 0;if(count>2048)count=2048;for(i=0;i<count;i++){a->phase=(uint32_t)(((uint64_t)a->phase+(uint64_t)frequency)%a->sample_rate);out[i]=(a->phase<a->sample_rate/2)?amplitude:(int16_t)(-(int32_t)amplitude);a->mix[i]=out[i];}a->samples+=(uint32_t)count;return count;}
