@@ -151,7 +151,10 @@ void dk_pvr_present(dk_pvr2_t*p){if(p){p->frames++;p->vblank=1;}}
 void dk_aica_reset(dk_aica_t*a){if(a){memset(a,0,sizeof(*a));a->sample_rate=44100;}}
 size_t dk_aica_mix_tone(dk_aica_t*a,uint32_t frequency,int16_t amplitude,size_t count,int16_t*out){size_t i;if(!a||!out||!a->sample_rate)return 0;if(count>2048)count=2048;for(i=0;i<count;i++){a->phase=(uint32_t)(((uint64_t)a->phase+(uint64_t)frequency)%a->sample_rate);out[i]=(a->phase<a->sample_rate/2)?amplitude:(int16_t)(-(int32_t)amplitude);a->mix[i]=out[i];}a->samples+=(uint32_t)count;return count;}
 void dk_gdrom_reset(dk_gdrom_t*g){if(g){memset(g,0,sizeof(*g));g->ready=1;}}
-int dk_gdrom_mount(dk_gdrom_t*g,const uint8_t*image,size_t bytes){if(!g||!image||!bytes||bytes%2048)return -1;g->image=image;g->image_size=bytes;g->sectors=(uint32_t)(bytes/2048);g->ready=1;g->reading=0;return 0;}
+int dk_gdrom_mount(dk_gdrom_t*g,const uint8_t*image,size_t bytes){
+ if(!g||!image||!bytes||bytes%2048||bytes/2048>UINT32_MAX)return -1;
+ g->image=image;g->image_size=bytes;g->sectors=(uint32_t)(bytes/2048);g->ready=1;g->reading=0;return 0;
+}
 int dk_gdrom_read_sector(dk_gdrom_t*g,uint32_t lba,uint8_t out[2048]){if(!g||!out||!g->ready||!g->image||lba>=g->sectors)return -1;g->reading=1;g->lba=lba;memcpy(out,g->image+(size_t)lba*2048,2048);g->reading=0;return 0;}
 void dk_maple_reset(dk_maple_t*p){if(p){memset(p,0,sizeof(*p));p->connected=1;}}
 void dk_maple_set_state(dk_maple_t*p,uint16_t buttons,int8_t lx,int8_t ly,int8_t rx,int8_t ry){if(p){p->buttons=buttons;p->lx=lx;p->ly=ly;p->rx=rx;p->ry=ry;p->connected=1;}}
