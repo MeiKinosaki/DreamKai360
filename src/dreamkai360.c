@@ -42,6 +42,12 @@ int dk_bus_write16(dk_bus_t*b,uint32_t a,uint16_t v){return (a&1)?-1:(dk_bus_wri
 int dk_bus_read32(dk_bus_t*b,uint32_t a,uint32_t*v){uint16_t x,y;if((a&3)||!v||dk_bus_read16(b,a,&x)||dk_bus_read16(b,a+2,&y))return -1;*v=((uint32_t)x<<16)|y;return 0;}
 int dk_bus_write32(dk_bus_t*b,uint32_t a,uint32_t v){return (a&3)?-1:(dk_bus_write16(b,a,(uint16_t)(v>>16))||dk_bus_write16(b,a+2,(uint16_t)v)?-1:0);}
 void dk_sh4_reset(dk_sh4_t*c,uint32_t pc){if(c){memset(c,0,sizeof(*c));c->pc=pc;}}
+static int32_t sign_extend_disp(uint32_t value,unsigned bits){
+ uint32_t sign=1u<<(bits-1u),mask=(1u<<bits)-1u;
+ int64_t v=(int64_t)(value&mask);
+ if(v&(int64_t)sign)v-=(int64_t)1u<<bits;
+ return (int32_t)v;
+}
 static void branch(dk_sh4_t*c,uint32_t target){c->branch_target=target;c->branch_pending=1;}
 int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  uint16_t op;uint32_t pc,oldtarget=0;uint8_t was_pending;unsigned n,m;
@@ -103,9 +109,9 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  else if((op&0xf00f)==0x2006){c->r[n]-=4;if(dk_bus_write32(b,c->r[n],c->r[m]))return -1;}
  else if((op&0xf00f)==0x6002){uint32_t v;if(dk_bus_read32(b,c->r[m],&v))return -1;c->r[n]=v;}
  else if((op&0xf00f)==0x6006){uint32_t v;if(dk_bus_read32(b,c->r[m],&v))return -1;c->r[n]=v;if(n!=m)c->r[m]+=4;}
- else if((op&0xf000)==0xa000)branch(c,pc+4+((int32_t)(int16_t)(op<<4)>>3));
- else if((op&0xff00)==0x8900){if(c->sr&1)branch(c,pc+4+((int8_t)op*2));}
- else if((op&0xff00)==0x8b00){if(!(c->sr&1))branch(c,pc+4+((int8_t)op*2));}
+ else if((op&0xf000)==0xa000)branch(c,pc+4u+(uint32_t)(sign_extend_disp(op&0x0fffu,12u)*2));
+ else if((op&0xff00)==0x8900){if(c->sr&1u)branch(c,pc+4u+(uint32_t)(sign_extend_disp(op&0xffu,8u)*2));}
+ else if((op&0xff00)==0x8b00){if(!(c->sr&1u))branch(c,pc+4u+(uint32_t)(sign_extend_disp(op&0xffu,8u)*2));}
  else if(op==0x000b)branch(c,c->pr);
  else if(op==0x001b)c->halted=1;
  else {c->halted=1;return -2;}
