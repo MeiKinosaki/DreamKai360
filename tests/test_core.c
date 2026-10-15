@@ -133,7 +133,7 @@ int main(void){
  { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x480; m.cpu.sr|=1u;
    m.cpu.r[2]=0x12345678u;
    ram[0x480]=0x02; ram[0x481]=0x29; /* MOVT R2 */
-   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x12345679u);
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==1u);
    m.cpu.r[2]=0x80000001u; ram[0x482]=0x42; ram[0x483]=0x04; /* ROTL R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x00000003u && (m.cpu.sr&1u));
    m.cpu.r[2]=0x80000001u; ram[0x484]=0x42; ram[0x485]=0x05; /* ROTR R2 */
