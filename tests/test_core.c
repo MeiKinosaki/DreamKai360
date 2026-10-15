@@ -26,7 +26,14 @@ int main(void){
    assert(dk_bus_read8(&m.bus,0x11000000u,&got)==0 && got==0x5a);
  }
  dk_mmu_reset(&mmu);mmu.enabled=1;assert(dk_mmu_map(&mmu,0,0x1000,0x2000,1,1)==0);
- {uint32_t p=0;assert(dk_mmu_translate(&mmu,0x1234,0,1,&p)==0&&p==0x2234);}
+ {uint32_t p=0;
+   assert(dk_mmu_translate(&mmu,0x1234,0,1,&p)==0&&p==0x2234);
+   assert(dk_mmu_translate(&mmu,0x1234,1,0,&p)==0&&p==0x2234);
+   assert(dk_mmu_map(&mmu,1,0x3000,0x4000,0,1)==0);
+   assert(dk_mmu_translate(&mmu,0x3000,1,0,&p)!=0); /* read-only page rejects writes */
+   assert(dk_mmu_translate(&mmu,0x3000,0,1,&p)==0&&p==0x4000);
+   assert(dk_mmu_translate(&mmu,0x5000,0,0,&p)!=0); /* unmapped page faults */
+ }
  dk_dma_reset(&m.dma);assert(dk_dma_start(&m.dma,0x100,0x200,4)==0);
  assert(dk_dma_step(&m.dma,&m.bus,4)==4);assert(dk_bus_read32(&m.bus,0x200,&v)==0&&v==0x12345678);
  /* DMA address wrap must fail closed, not copy from wrapped low memory. */
@@ -37,13 +44,20 @@ int main(void){
  assert(dk_pvr_attach_framebuffer(&m.pvr,fb,640u*480u)==0);
  assert(dk_pvr_clear(&m.pvr,0xff000000u)==0);
  assert(dk_pvr_fill_rect(&m.pvr,10,10,4,4,0xffffffffu)==0);
- assert(fb[10u*640u+10u]==0xffffffffu&&fb[0]==0xff000000u);
+ assert(dk_pvr_fill_rect(&m.pvr,-3,-2,5,4,0xff00ff00u)==0);
+ assert(dk_pvr_fill_rect(&m.pvr,2147483640,0,100,1,0xffffffffu)==0);
+ assert(fb[0]==0xff00ff00u && fb[1u*640u+1u]==0xff00ff00u);
+ assert(fb[10u*640u+10u]==0xffffffffu);
  dk_pvr_present(&m.pvr);assert(m.pvr.frames==1);
  dk_irq_raise(&m.irq,DK_IRQ_VBLANK);assert(dk_irq_active(&m.irq)&DK_IRQ_VBLANK);
  dk_irq_ack(&m.irq,DK_IRQ_VBLANK);assert(!(dk_irq_active(&m.irq)&DK_IRQ_VBLANK));
  dk_scheduler_schedule(&m.scheduler,5);assert(!dk_scheduler_due(&m.scheduler));
  dk_scheduler_advance(&m.scheduler,4);assert(!dk_scheduler_due(&m.scheduler));
  dk_scheduler_advance(&m.scheduler,1);assert(dk_scheduler_due(&m.scheduler));
+ /* Deadline arithmetic saturates instead of wrapping to an already-due time. */
+ { dk_scheduler_t s={UINT64_MAX-2u,0,0}; dk_scheduler_schedule(&s,10u);
+   assert(s.deadline==UINT64_MAX && !dk_scheduler_due(&s));
+ }
  /* AICA: phase accumulator remains bounded even above sample rate. */
  { dk_aica_t a; int16_t tone[4]; dk_aica_reset(&a);
    assert(dk_aica_mix_tone(&a,1000000u,12000,4,tone)==4);
