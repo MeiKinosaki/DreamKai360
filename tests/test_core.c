@@ -15,6 +15,16 @@ int main(void){
  assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[2]==7);
  assert(dk_bus_write32(&m.bus,0x100,0x12345678)==0);
  assert(dk_bus_read32(&m.bus,0x100,&v)==0&&v==0x12345678);
+ /* AICA MMIO must win over the 16 MiB test RAM range at the same address. */
+ { uint8_t got=0; ram[0x00700000u]=0x11;
+   assert(dk_bus_write8(&m.bus,0x00700000u,0xa5)==0);
+   assert(((uint8_t*)m.bus.aica)[0]==0xa5 && ram[0x00700000u]==0x11);
+   assert(dk_bus_read8(&m.bus,0x00700000u,&got)==0 && got==0xa5);
+ }
+ /* PVR register-window reads and writes are backed by the bus register bank. */
+ { uint8_t got=0; assert(dk_bus_write8(&m.bus,0x11000000u,0x5a)==0);
+   assert(dk_bus_read8(&m.bus,0x11000000u,&got)==0 && got==0x5a);
+ }
  dk_mmu_reset(&mmu);mmu.enabled=1;assert(dk_mmu_map(&mmu,0,0x1000,0x2000,1,1)==0);
  {uint32_t p=0;assert(dk_mmu_translate(&mmu,0x1234,0,1,&p)==0&&p==0x2234);}
  dk_dma_reset(&m.dma);assert(dk_dma_start(&m.dma,0x100,0x200,4)==0);
