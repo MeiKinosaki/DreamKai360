@@ -90,7 +90,19 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
 }
 void dk_dma_reset(dk_dma_t*d){if(d)memset(d,0,sizeof(*d));}
 int dk_dma_start(dk_dma_t*d,uint32_t s,uint32_t t,uint32_t n){if(!d||!n||d->active)return -1;d->src=s;d->dst=t;d->length=n;d->done=0;d->active=1;d->error=0;return 0;}
-uint32_t dk_dma_step(dk_dma_t*d,dk_bus_t*b,uint32_t budget){uint32_t k=0;uint8_t v;if(!d||!b)return 0;while(d->active&&k<budget&&d->done<d->length){if(dk_bus_read8(b,d->src+d->done,&v)||dk_bus_write8(b,d->dst+d->done,v)){d->error=1;d->active=0;break;}d->done++;k++;}if(d->done>=d->length)d->active=0;return k;}
+uint32_t dk_dma_step(dk_dma_t*d,dk_bus_t*b,uint32_t budget){
+ uint32_t k=0;uint8_t v;if(!d||!b)return 0;
+ while(d->active&&k<budget&&d->done<d->length){
+  /* Reject wrapped source/destination addresses instead of aliasing low RAM. */
+  if(d->done>UINT32_MAX-d->src||d->done>UINT32_MAX-d->dst||
+     dk_bus_read8(b,d->src+d->done,&v)||dk_bus_write8(b,d->dst+d->done,v)){
+   d->error=1;d->active=0;break;
+  }
+  d->done++;k++;
+ }
+ if(d->done>=d->length)d->active=0;
+ return k;
+}
 void dk_irq_raise(dk_irq_t*i,uint32_t bits){if(i){i->pending|=bits;i->raised++;}}
 void dk_irq_ack(dk_irq_t*i,uint32_t bits){if(i)i->pending&=~bits;}
 uint32_t dk_irq_active(const dk_irq_t*i){return i?(i->pending&~i->mask):0;}
