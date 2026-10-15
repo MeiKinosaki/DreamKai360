@@ -189,6 +189,17 @@ int main(void){
    ram[0x48c]=0x42; ram[0x48d]=0x19; /* SHLR8 R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x00345678u);
  }
+ /* SH-4 signed positive/non-negative comparisons. */
+ { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x5c0;
+   m.cpu.r[2]=0xffffffffu; ram[0x5c0]=0x42; ram[0x5c1]=0x11; /* CMP/PZ R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && !(m.cpu.sr&1u));
+   m.cpu.r[2]=0; ram[0x5c2]=0x42; ram[0x5c3]=0x11;
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && (m.cpu.sr&1u));
+   m.cpu.r[2]=1; ram[0x5c4]=0x42; ram[0x5c5]=0x15; /* CMP/PL R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && (m.cpu.sr&1u));
+   m.cpu.r[2]=0; ram[0x5c6]=0x42; ram[0x5c7]=0x15;
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && !(m.cpu.sr&1u));
+ }
  /* SH-4 BRA and conditional branch displacement sign-extension regressions. */
  { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x600; m.cpu.sr&=~1u;
    ram[0x600]=0xa0; ram[0x601]=0x02; /* BRA +2 => target PC 0x608 after delay slot */
