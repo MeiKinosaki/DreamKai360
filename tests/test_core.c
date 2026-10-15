@@ -110,9 +110,9 @@ int main(void){
  { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x460;
    m.cpu.r[2]=0x12345678u; m.cpu.r[3]=0x89abcdefu;
    ram[0x460]=0x62; ram[0x461]=0x28; /* SWAP.B R2,R2 */
-   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x12345687u);
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x12347856u);
    ram[0x462]=0x62; ram[0x463]=0x29; /* SWAP.W R2,R2 */
-   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x56871234u);
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x78561234u);
    m.cpu.r[3]=0x12345680u; ram[0x464]=0x63; ram[0x465]=0x2c; /* EXTU.B R3,R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x80u);
    ram[0x466]=0x63; ram[0x467]=0x2e; /* EXTS.B R3,R2 */
