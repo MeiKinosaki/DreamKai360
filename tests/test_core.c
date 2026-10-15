@@ -68,6 +68,9 @@ int main(void){
  { dk_aica_t a; int16_t tone[4]; dk_aica_reset(&a);
    assert(dk_aica_mix_tone(&a,1000000u,12000,4,tone)==4);
    assert(a.samples==4 && a.phase<a.sample_rate);
+   a.phase=0;
+   assert(dk_aica_mix_tone(&a,22050u,INT16_MIN,2,tone)==2);
+   assert(tone[0]==INT16_MIN && tone[1]==INT16_MAX);
  }
  /* SH-4 T-bit comparisons and pre-decrement/post-increment memory ops. */
  { uint32_t word=0; m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x400;
