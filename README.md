@@ -4,14 +4,14 @@ Emulador experimental de Dreamcast para Xbox 360 RGH.
 ## v1.11b — desvios SH-4 portáveis e testes de slot de atraso
 
 O projeto contém um núcleo C experimental em `src/dreamkai360.h` e `src/dreamkai360.c`, com:
-- CPU SH-4 interpretada e parcial: operações lógicas, comparações, loads/stores, SWAP, EXTU/EXTS, XTRCT, MOVT, TST, DT, SHAL/SHAR, rotações, deslocamentos, aritmética imediata e desvios BRA/BT/BF com extensão de sinal explícita e slot de atraso experimental;
+- CPU SH-4 interpretada e parcial: operações lógicas, comparações, loads/stores, SWAP, EXTU/EXTS, XTRCT, MOVT, TST, DT, SHAL/SHAR, rotações, deslocamentos, aritmética imediata, CMP/PZ, CMP/PL e desvios BRA/BT/BF com extensão de sinal explícita e slot de atraso experimental;
 - MMU/TLB experimental de 64 entradas, ASID e permissões;
 - barramento big-endian de 8/16/32 bits e janelas MMIO experimentais;
 - DMA por orçamento, IRQ e scheduler;
 - framebuffer experimental PVR2 com limpeza, retângulos preenchidos e contagem de quadros;
 - mixer de tom de teste, leitura de setores de 2048 bytes de imagem GD-ROM montada em memória e estado básico de entrada Maple.
 
-Os testes de regressão em `tests/test_core.c` cobrem instruções SH-4 selecionadas, desvios positivos/negativos e slot de atraso, MMIO AICA/PVR, permissões da MMU, framebuffer, DMA/IRQ e limites do scheduler.
+Os testes de regressão em `tests/test_core.c` cobrem instruções SH-4 selecionadas, desvios positivos/negativos e slot de atraso, comparações assinadas CMP/PZ e CMP/PL, MMIO AICA/PVR, permissões da MMU, framebuffer, DMA/IRQ e limites do scheduler.
 
 ## Toolchain Xenon na nuvem
 
