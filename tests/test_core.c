@@ -217,7 +217,7 @@ int main(void){
    ram[0x640]=0x8b; ram[0x641]=0x01; /* BF +1 is taken when T=0 */
    ram[0x642]=0x00; ram[0x643]=0x09; /* delay-slot NOP */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.branch_pending && m.cpu.pc==0x642);
-   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && !m.cpu.branch_pending && m.cpu.pc==0x648);
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && !m.cpu.branch_pending && m.cpu.pc==0x646);
  }
  /* GD-ROM sector bounds, malformed sizes and Maple input state. */
  assert(dk_gdrom_mount(&m.gdrom,disc,sizeof(disc)-1u)!=0);
