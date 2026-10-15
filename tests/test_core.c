@@ -59,6 +59,8 @@ int main(void){
  /* Deadline arithmetic saturates instead of wrapping to an already-due time. */
  { dk_scheduler_t s={UINT64_MAX-2u,0,0}; dk_scheduler_schedule(&s,10u);
    assert(s.deadline==UINT64_MAX && !dk_scheduler_due(&s));
+   dk_scheduler_advance(&s,10u);
+   assert(s.now==UINT64_MAX && dk_scheduler_due(&s));
  }
  /* AICA: phase accumulator remains bounded even above sample rate. */
  { dk_aica_t a; int16_t tone[4]; dk_aica_reset(&a);
@@ -131,9 +133,9 @@ int main(void){
    ram[0x480]=0x02; ram[0x481]=0x29; /* MOVT R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x12345679u);
    m.cpu.r[2]=0x80000001u; ram[0x482]=0x42; ram[0x483]=0x04; /* ROTL R2 */
-   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x00000003u);
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x00000003u && (m.cpu.sr&1u));
    m.cpu.r[2]=0x80000001u; ram[0x484]=0x42; ram[0x485]=0x05; /* ROTR R2 */
-   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xc0000000u);
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xc0000000u && (m.cpu.sr&1u));
    m.cpu.r[2]=3; ram[0x486]=0x42; ram[0x487]=0x08; /* SHLL2 R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==12u);
    ram[0x488]=0x42; ram[0x489]=0x09; /* SHLR2 R2 */
