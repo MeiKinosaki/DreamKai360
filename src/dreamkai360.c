@@ -75,10 +75,10 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  else if((op&0xf00f)==0x200d)c->r[n]=(c->r[n]>>16)|(c->r[m]<<16);
  else if((op&0xf00f)==0x600b)c->r[n]=0u-c->r[m];
  else if((op&0xf0ff)==0x0029){if(c->sr&1u)c->r[n]|=1u;else c->r[n]&=~1u;}
- else if((op&0xf0ff)==0x4000)c->r[n]<<=1;
- else if((op&0xf0ff)==0x4001)c->r[n]>>=1;
- else if((op&0xf0ff)==0x4004)c->r[n]=(c->r[n]<<1)|(c->r[n]>>31);
- else if((op&0xf0ff)==0x4005)c->r[n]=(c->r[n]>>1)|(c->r[n]<<31);
+ else if((op&0xf0ff)==0x4000){c->sr=(c->sr&~1u)|(c->r[n]>>31);c->r[n]<<=1;}
+ else if((op&0xf0ff)==0x4001){c->sr=(c->sr&~1u)|(c->r[n]&1u);c->r[n]>>=1;}
+ else if((op&0xf0ff)==0x4004){c->sr=(c->sr&~1u)|(c->r[n]>>31);c->r[n]=(c->r[n]<<1)|(c->r[n]>>31);}
+ else if((op&0xf0ff)==0x4005){c->sr=(c->sr&~1u)|(c->r[n]&1u);c->r[n]=(c->r[n]>>1)|(c->r[n]<<31);}
  else if((op&0xf0ff)==0x4008)c->r[n]<<=2;
  else if((op&0xf0ff)==0x4009)c->r[n]>>=2;
  else if((op&0xf0ff)==0x4018)c->r[n]<<=8;
@@ -129,7 +129,7 @@ uint32_t dk_dma_step(dk_dma_t*d,dk_bus_t*b,uint32_t budget){
 void dk_irq_raise(dk_irq_t*i,uint32_t bits){if(i){i->pending|=bits;i->raised++;}}
 void dk_irq_ack(dk_irq_t*i,uint32_t bits){if(i)i->pending&=~bits;}
 uint32_t dk_irq_active(const dk_irq_t*i){return i?(i->pending&~i->mask):0;}
-void dk_scheduler_advance(dk_scheduler_t*s,uint64_t c){if(s)s->now+=c;}
+void dk_scheduler_advance(dk_scheduler_t*s,uint64_t c){if(s)s->now=(UINT64_MAX-s->now<c)?UINT64_MAX:s->now+c;}
 void dk_scheduler_schedule(dk_scheduler_t*s,uint64_t d){if(s){s->deadline=(UINT64_MAX-s->now<d)?UINT64_MAX:s->now+d;s->armed=1;}}
 int dk_scheduler_due(const dk_scheduler_t*s){return s&&s->armed&&s->now>=s->deadline;}
 void dk_pvr_reset(dk_pvr2_t*p){if(p){memset(p,0,sizeof(*p));p->width=640;p->height=480;}}
