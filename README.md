@@ -4,7 +4,7 @@ Emulador experimental de Dreamcast para Xbox 360 RGH.
 ## v1.10b — expansão do núcleo e testes de regressão
 
 O projeto contém um núcleo C experimental em `src/dreamkai360.h` e `src/dreamkai360.c`, com:
-- CPU SH-4 interpretada e parcial: operações lógicas, comparações, loads/stores, SWAP, EXTU/EXTS, XTRCT, MOVT, rotações e deslocamentos;
+- CPU SH-4 interpretada e parcial: operações lógicas, comparações, loads/stores, SWAP, EXTU/EXTS, XTRCT, MOVT, TST, DT, SHAL/SHAR, rotações, deslocamentos e aritmética imediata;
 - MMU/TLB experimental de 64 entradas, ASID e permissões;
 - barramento big-endian de 8/16/32 bits e janelas MMIO experimentais;
 - DMA por orçamento, IRQ e scheduler;
