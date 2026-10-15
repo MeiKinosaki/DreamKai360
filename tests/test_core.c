@@ -29,6 +29,10 @@ int main(void){
  {uint32_t p=0;assert(dk_mmu_translate(&mmu,0x1234,0,1,&p)==0&&p==0x2234);}
  dk_dma_reset(&m.dma);assert(dk_dma_start(&m.dma,0x100,0x200,4)==0);
  assert(dk_dma_step(&m.dma,&m.bus,4)==4);assert(dk_bus_read32(&m.bus,0x200,&v)==0&&v==0x12345678);
+ /* DMA address wrap must fail closed, not copy from wrapped low memory. */
+ dk_dma_reset(&m.dma);assert(dk_dma_start(&m.dma,UINT32_MAX,0x300,2)==0);
+ assert(dk_dma_step(&m.dma,&m.bus,2)==1);
+ assert(m.dma.error && !m.dma.active && m.dma.done==1);
  dk_pvr_reset(&m.pvr);assert(dk_pvr_set_mode(&m.pvr,640,480)==0);
  assert(dk_pvr_attach_framebuffer(&m.pvr,fb,640u*480u)==0);
  assert(dk_pvr_clear(&m.pvr,0xff000000u)==0);
