@@ -61,6 +61,13 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  else if((op&0xf00f)==0x200a)c->r[n]^=c->r[m];
  else if((op&0xf00f)==0x200b)c->r[n]|=c->r[m];
  else if((op&0xf00f)==0x6007)c->r[n]=~c->r[m];
+ else if((op&0xf00f)==0x6008)c->r[n]=(c->r[m]&0xffff0000u)|((c->r[m]&0xffu)<<8)|((c->r[m]>>8)&0xffu);
+ else if((op&0xf00f)==0x6009)c->r[n]=(c->r[m]<<16)|(c->r[m]>>16);
+ else if((op&0xf00f)==0x600c)c->r[n]=c->r[m]&0xffu;
+ else if((op&0xf00f)==0x600d)c->r[n]=c->r[m]&0xffffu;
+ else if((op&0xf00f)==0x600e)c->r[n]=(uint32_t)(int32_t)(int8_t)c->r[m];
+ else if((op&0xf00f)==0x600f)c->r[n]=(uint32_t)(int32_t)(int16_t)c->r[m];
+ else if((op&0xf00f)==0x200d)c->r[n]=(c->r[n]>>16)|(c->r[m]<<16);
  else if((op&0xf00f)==0x600b)c->r[n]=0u-c->r[m];
  else if((op&0xf0ff)==0x4000)c->r[n]<<=1;
  else if((op&0xf0ff)==0x4001)c->r[n]>>=1;
