@@ -101,6 +101,8 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  else if((op&0xf00f)==0x2004){c->r[n]--;if(dk_bus_write8(b,c->r[n],(uint8_t)c->r[m]))return -1;}
  else if((op&0xf00f)==0x2005){c->r[n]-=2;if(dk_bus_write16(b,c->r[n],(uint16_t)c->r[m]))return -1;}
  else if((op&0xf0ff)==0x4010){c->r[n]--;if(c->r[n]==0)c->sr|=1u;else c->sr&=~1u;}
+ else if((op&0xf0ff)==0x4011){if((int32_t)c->r[n]>=0)c->sr|=1u;else c->sr&=~1u;}
+ else if((op&0xf0ff)==0x4015){if((int32_t)c->r[n]>0)c->sr|=1u;else c->sr&=~1u;}
  else if(op==0x0008)c->sr&=~1u;
  else if(op==0x0018)c->sr|=1u;
  else if((op&0xf00f)==0x300c)c->r[n]+=c->r[m];
