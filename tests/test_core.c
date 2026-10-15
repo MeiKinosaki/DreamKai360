@@ -145,7 +145,8 @@ int main(void){
    ram[0x48c]=0x42; ram[0x48d]=0x19; /* SHLR8 R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x00345678u);
  }
- /* GD-ROM sector bounds and Maple input state. */
+ /* GD-ROM sector bounds, malformed sizes and Maple input state. */
+ assert(dk_gdrom_mount(&m.gdrom,disc,sizeof(disc)-1u)!=0);
  assert(dk_gdrom_mount(&m.gdrom,disc,sizeof(disc))==0);
  disc[2048]=0x5a;
  assert(dk_gdrom_read_sector(&m.gdrom,1,sector)==0 && sector[0]==0x5a);
