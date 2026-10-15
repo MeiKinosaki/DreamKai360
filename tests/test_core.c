@@ -123,6 +123,21 @@ int main(void){
    ram[0x44c]=0x42; ram[0x44d]=0x01; /* SHLR R2 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==8);
  }
+ /* SH-4 immediate arithmetic, TST and DT regression cases. */
+ { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x4c0;
+   ram[0x4c0]=0xe2; ram[0x4c1]=0xff; /* MOV #-1,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffffffffu);
+   ram[0x4c2]=0x72; ram[0x4c3]=0xff; /* ADD #-1,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xfffffffeu);
+   m.cpu.r[2]=0xf0u; m.cpu.r[3]=0x0fu; ram[0x4c4]=0x22; ram[0x4c5]=0x38; /* TST R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && (m.cpu.sr&1u));
+   m.cpu.r[3]=0xf0u; ram[0x4c6]=0x22; ram[0x4c7]=0x38;
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && !(m.cpu.sr&1u));
+   m.cpu.r[2]=1u; ram[0x4c8]=0x42; ram[0x4c9]=0x10; /* DT R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0u && (m.cpu.sr&1u));
+   m.cpu.r[2]=2u; ram[0x4ca]=0x42; ram[0x4cb]=0x10;
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==1u && !(m.cpu.sr&1u));
+ }
  /* SH-4 arithmetic shifts preserve sign and report the shifted bit. */
  { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x4b0;
    m.cpu.r[2]=0x80000001u; ram[0x4b0]=0x42; ram[0x4b1]=0x21; /* SHAR R2 */
