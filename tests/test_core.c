@@ -32,6 +32,8 @@ int main(void){
    assert(dk_mmu_map(&mmu,1,0x3000,0x4000,0,1)==0);
    assert(dk_mmu_translate(&mmu,0x3000,1,0,&p)!=0); /* read-only page rejects writes */
    assert(dk_mmu_translate(&mmu,0x3000,0,1,&p)==0&&p==0x4000);
+   assert(dk_mmu_map(&mmu,2,0x6000,0x7000,1,0)==0);
+   assert(dk_mmu_translate(&mmu,0x6000,0,1,&p)!=0); /* non-executable page faults */
    assert(dk_mmu_translate(&mmu,0x5000,0,0,&p)!=0); /* unmapped page faults */
  }
  dk_dma_reset(&m.dma);assert(dk_dma_start(&m.dma,0x100,0x200,4)==0);
@@ -147,6 +149,9 @@ int main(void){
  }
  /* GD-ROM sector bounds, malformed sizes and Maple input state. */
  assert(dk_gdrom_mount(&m.gdrom,disc,sizeof(disc)-1u)!=0);
+#if SIZE_MAX > UINT32_MAX
+ assert(dk_gdrom_mount(&m.gdrom,disc,((size_t)UINT32_MAX+1u)*2048u)!=0);
+#endif
  assert(dk_gdrom_mount(&m.gdrom,disc,sizeof(disc))==0);
  disc[2048]=0x5a;
  assert(dk_gdrom_read_sector(&m.gdrom,1,sector)==0 && sector[0]==0x5a);
