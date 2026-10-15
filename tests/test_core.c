@@ -15,6 +15,7 @@ int main(void){
  assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[2]==7);
  assert(dk_bus_write32(&m.bus,0x100,0x12345678)==0);
  assert(dk_bus_read32(&m.bus,0x100,&v)==0&&v==0x12345678);
+ assert(dk_bus_read32(&m.bus,0x101,&v)!=0 && dk_bus_write16(&m.bus,0x101,0xabcd)!=0);
  /* AICA MMIO must win over the 16 MiB test RAM range at the same address. */
  { uint8_t got=0; ram[0x00700000u]=0x11;
    assert(dk_bus_write8(&m.bus,0x00700000u,0xa5)==0);
@@ -41,6 +42,7 @@ int main(void){
    assert(dk_mmu_translate(&mmu,0x5000,0,0,&p)!=0); /* unmapped page faults */
  }
  dk_dma_reset(&m.dma);assert(dk_dma_start(&m.dma,0x100,0x200,4)==0);
+ assert(dk_dma_step(&m.dma,&m.bus,0)==0 && m.dma.active && m.dma.done==0);
  assert(dk_dma_step(&m.dma,&m.bus,4)==4);assert(dk_bus_read32(&m.bus,0x200,&v)==0&&v==0x12345678);
  /* DMA address wrap must fail closed instead of wrapping after progress. */
  dk_dma_reset(&m.dma);assert(dk_dma_start(&m.dma,0x100,0x300,2)==0);
@@ -50,6 +52,7 @@ int main(void){
  assert(m.dma.error && !m.dma.active && m.dma.done==1);
  dk_pvr_reset(&m.pvr);assert(dk_pvr_set_mode(&m.pvr,640,480)==0);
  assert(dk_pvr_set_mode(&m.pvr,0,480)!=0 && dk_pvr_set_mode(&m.pvr,2048,480)!=0);
+ assert(dk_pvr_attach_framebuffer(&m.pvr,fb,1u)!=0);
  assert(dk_pvr_attach_framebuffer(&m.pvr,fb,640u*480u)==0);
  assert(dk_pvr_clear(&m.pvr,0xff000000u)==0);
  assert(dk_pvr_fill_rect(&m.pvr,10,10,4,4,0xffffffffu)==0);
@@ -59,6 +62,8 @@ int main(void){
  assert(fb[10u*640u+10u]==0xffffffffu);
  dk_pvr_present(&m.pvr);assert(m.pvr.frames==1);
  dk_irq_raise(&m.irq,DK_IRQ_VBLANK);assert(dk_irq_active(&m.irq)&DK_IRQ_VBLANK);
+ m.irq.mask=DK_IRQ_VBLANK;assert(!(dk_irq_active(&m.irq)&DK_IRQ_VBLANK));
+ m.irq.mask=0;assert(dk_irq_active(&m.irq)&DK_IRQ_VBLANK);
  dk_irq_ack(&m.irq,DK_IRQ_VBLANK);assert(!(dk_irq_active(&m.irq)&DK_IRQ_VBLANK));
  dk_scheduler_schedule(&m.scheduler,5);assert(!dk_scheduler_due(&m.scheduler));
  dk_scheduler_advance(&m.scheduler,4);assert(!dk_scheduler_due(&m.scheduler));
