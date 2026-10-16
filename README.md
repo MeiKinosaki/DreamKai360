@@ -11,11 +11,11 @@ O projeto contém um núcleo C experimental em `src/dreamkai360.h` e `src/dreamk
 - framebuffer experimental PVR2 com limpeza, retângulos preenchidos e contagem de quadros;
 - mixer de tom de teste, leitura de setores de 2048 bytes de imagem GD-ROM montada em memória e estado básico de entrada Maple.
 
-Os testes de regressão em `tests/test_core.c` cobrem instruções SH-4 selecionadas, desvios positivos/negativos e slot de atraso, comparações assinadas CMP/PZ e CMP/PL, MMIO AICA/PVR, permissões da MMU, framebuffer, DMA/IRQ e limites do scheduler.
+Os testes de regressão em `tests/test_core.c` cobrem instruções SH-4 selecionadas, desvios positivos/negativos e slot de atraso, comparações assinadas CMP/PZ e CMP/PL, ADDC/SUBC com carry/borrow e ADDV/SUBV com overflow, MMIO AICA/PVR, permissões da MMU, framebuffer, DMA/IRQ e limites do scheduler.
 
 ## Toolchain Xenon na nuvem
 
-O workflow **DreamKai360 Cloud Xenon Toolchain** em `.github/workflows/xenon-cloud.yml` executa os testes host, constrói a toolchain Free60/libXenon e tenta compilar um ELF de teste que vincula o núcleo. A execução #83 passou incluindo testes host, construção da toolchain Free60/libXenon, runtime e compilação/auditoria do ELF de teste. Isso não equivale a um `default.xex` nem a teste em console; consulte [GitHub Actions](https://github.com/MeiKinosaki/DreamKai360/actions) para a execução mais recente.
+O workflow **DreamKai360 Cloud Xenon Toolchain** em `.github/workflows/xenon-cloud.yml` executa os testes host, constrói a toolchain Free60/libXenon e tenta compilar um ELF de teste que vincula o núcleo. A execução #91 passou incluindo testes host, construção da toolchain Free60/libXenon, runtime e compilação/auditoria do ELF de teste. As alterações mais recentes de aritmética SH-4 ainda precisam de uma nova execução verde. Isso não equivale a um `default.xex` nem a teste em console; consulte [GitHub Actions](https://github.com/MeiKinosaki/DreamKai360/actions) para a execução mais recente.
 
 O ELF de teste é uma sonda de compilação e não comprova inicialização no Xbox 360.
 
