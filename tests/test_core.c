@@ -200,6 +200,21 @@ int main(void){
    m.cpu.r[2]=0; ram[0x5c6]=0x42; ram[0x5c7]=0x15;
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && !(m.cpu.sr&1u));
  }
+ /* SH-4 carry/borrow and signed-overflow arithmetic regression tests. */
+ { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x5d0;
+   m.cpu.r[2]=0xffffffffu; m.cpu.r[3]=0u; m.cpu.sr|=1u;
+   ram[0x5d0]=0x32; ram[0x5d1]=0x3e; /* ADDC R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0u && (m.cpu.sr&1u));
+   m.cpu.r[2]=0u; m.cpu.r[3]=0u; m.cpu.sr|=1u;
+   ram[0x5d2]=0x32; ram[0x5d3]=0x3a; /* SUBC R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffffffffu && (m.cpu.sr&1u));
+   m.cpu.r[2]=0x7fffffffu; m.cpu.r[3]=1u;
+   ram[0x5d4]=0x32; ram[0x5d5]=0x3f; /* ADDV R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x80000000u && (m.cpu.sr&1u));
+   m.cpu.r[2]=0x80000000u; m.cpu.r[3]=1u;
+   ram[0x5d6]=0x32; ram[0x5d7]=0x3b; /* SUBV R3,R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x7fffffffu && (m.cpu.sr&1u));
+ }
  /* SH-4 BRA and conditional branch displacement sign-extension regressions. */
  { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x600; m.cpu.sr&=~1u;
    ram[0x600]=0xa0; ram[0x601]=0x02; /* BRA +2 => target PC 0x608 after delay slot */
