@@ -202,9 +202,9 @@ int main(void){
  }
  /* SH-4 NEGC, DIV0U and DIV0S flag setup. */
  { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x5c0;
-   m.cpu.r[2]=0; m.cpu.sr&=~1u;
+   m.cpu.r[2]=1; m.cpu.sr&=~1u;
    ram[0x5c0]=0x62; ram[0x5c1]=0x2a; /* NEGC R2,R2 */
-   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0u && (m.cpu.sr&1u));
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffffffffu && (m.cpu.sr&1u));
    m.cpu.r[2]=1; m.cpu.sr|=0x301u;
    ram[0x5c2]=0x00; ram[0x5c3]=0x19; /* DIV0U */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && (m.cpu.sr&0x301u)==0u);
