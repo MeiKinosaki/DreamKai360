@@ -41,6 +41,18 @@ int main(void){
    assert(dk_mmu_translate(&mmu,0x1234,0,0,&p)==0&&p==0x2234);
    assert(dk_mmu_translate(&mmu,0x5000,0,0,&p)!=0); /* unmapped page faults */
  }
+ /* Verify that the CPU bus actually uses MMU translations and permissions. */
+ { uint8_t got=0; uint64_t old_faults=m.bus.faults;
+   assert(dk_mmu_map(&mmu,3,0x1000,0x2000,1,1)==0);
+   m.bus.mmu=&mmu; ram[0x2000]=0x6a;
+   assert(dk_bus_read8(&m.bus,0x1000,&got)==0 && got==0x6a);
+   assert(dk_bus_write8(&m.bus,0x1001,0x5c)==0 && ram[0x2001]==0x5c);
+   assert(dk_mmu_map(&mmu,4,0x3000,0x4000,0,1)==0);
+   assert(dk_bus_write8(&m.bus,0x3000,0x77)!=0);
+   assert(m.bus.faults==old_faults+1 && ram[0x4000]==0);
+   assert(dk_bus_read8(&m.bus,0x3000,&got)==0);
+   m.bus.mmu=&m.mmu;
+ }
  dk_dma_reset(&m.dma);assert(dk_dma_start(&m.dma,0x100,0x200,4)==0);
  assert(dk_dma_step(&m.dma,&m.bus,0)==0 && m.dma.active && m.dma.done==0);
  assert(dk_dma_step(&m.dma,&m.bus,4)==4);assert(dk_bus_read32(&m.bus,0x200,&v)==0&&v==0x12345678);
