@@ -270,6 +270,20 @@ int main(void){
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.branch_pending && m.cpu.pc==0x642);
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && !m.cpu.branch_pending && m.cpu.pc==0x646);
  }
+ /* SH-4 PC-relative loads and MOVA. */
+ { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x660;
+   ram[0x660]=0x92; ram[0x661]=0x02; /* MOV.W @(2,PC),R2 => 0x668 */
+   ram[0x668]=0x80; ram[0x669]=0x01;
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffff8001u);
+   m.cpu.pc=0x66c; ram[0x66c]=0xc4; ram[0x66d]=0x04; /* MOV.B @(4,PC),R0 => 0x674 */
+   ram[0x674]=0x80;
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[0]==0xffffff80u);
+   m.cpu.pc=0x670; ram[0x670]=0xd3; ram[0x671]=0x01; /* MOV.L @(1,PC),R3 => 0x678 */
+   ram[0x678]=0x12; ram[0x679]=0x34; ram[0x67a]=0x56; ram[0x67b]=0x78;
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[3]==0x12345678u);
+   m.cpu.pc=0x680; ram[0x680]=0xc7; ram[0x681]=0x03; /* MOVA @(3,PC),R0 => 0x68c */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[0]==0x68cu);
+ }
  /* GD-ROM sector bounds, malformed sizes and Maple input state. */
  assert(dk_gdrom_mount(&m.gdrom,disc,sizeof(disc)-1u)!=0);
 #if SIZE_MAX > UINT32_MAX
