@@ -19,6 +19,10 @@ O workflow **DreamKai360 Cloud Xenon Toolchain** em `.github/workflows/xenon-clo
 
 O ELF de teste é uma sonda de compilação e não comprova inicialização no Xbox 360.
 
+## Barramento e MMU — cobertura de regressão
+
+Os testes também verificam que a tradução de endereços virtuais da MMU é aplicada pelo barramento, que leituras/escritas chegam à página física mapeada e que uma página somente leitura rejeita escritas e incrementa o contador de falhas. Esta cobertura valida o caminho do barramento em testes de host; ainda não equivale à implementação completa da MMU do Dreamcast nem à execução no Xbox 360 RGH.
+
 ## Núcleo SH-4: instruções em progresso
 
 O interpretador também inclui loads indexados `MOV.B/W/L @(R0,Rm),Rn`, com leitura de byte/word/longword pelo barramento e extensão de sinal para byte e word. Testes de regressão cobrem valores negativos, ordenação big-endian e preservação dos registradores de endereço. Isso amplia apenas o subconjunto de instruções; não representa cobertura completa do SH-4.
