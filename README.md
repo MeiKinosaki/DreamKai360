@@ -21,7 +21,7 @@ O ELF de teste é uma sonda de compilação e não comprova inicialização no X
 
 ## Limitações conhecidas
 
-Este núcleo **não é ainda um emulador funcional de Dreamcast**. O SH-4 implementa apenas um subconjunto pequeno de instruções e ainda não possui tratamento completo de exceções e registradores especiais. O mapa físico, alinhamento e MMIO precisam de validação contra o hardware. O PVR2 não rasteriza polígonos e texturas reais; o mixer AICA é apenas um tom de teste; GD-ROM não interpreta imagens CDI/GDI nem implementa todos os comandos do dispositivo; Maple não implementa o protocolo completo. Também faltam BIOS/boot, carregamento de jogos, sincronização completa dos periféricos, integração real de vídeo/áudio libXenon e geração validada de `default.xex`.
+Este núcleo **não é ainda um emulador funcional de Dreamcast**. O SH-4 implementa apenas um subconjunto pequeno de instruções e ainda não possui tratamento completo de exceções, divisão iterativa DIV1 e registradores especiais. O mapa físico, alinhamento e MMIO precisam de validação contra o hardware. O PVR2 não rasteriza polígonos e texturas reais; o mixer AICA é apenas um tom de teste; GD-ROM não interpreta imagens CDI/GDI nem implementa todos os comandos do dispositivo; Maple não implementa o protocolo completo. Também faltam BIOS/boot, carregamento de jogos, sincronização completa dos periféricos, integração real de vídeo/áudio libXenon e geração validada de `default.xex`.
 
 As estimativas de progresso não equivalem a compatibilidade comprovada. É necessário passar os testes host, validar a compilação Xenon e depois testar em hardware RGH.
 
