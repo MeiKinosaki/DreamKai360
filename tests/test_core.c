@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 int main(void){
- uint8_t *ram=(uint8_t*)calloc(1,DK_RAM_SIZE); uint8_t disc[4096]={0},sector[2048]; uint32_t *fb=(uint32_t*)calloc(640u*480u,sizeof(uint32_t)); dk_machine_t m; uint32_t v=0; dk_mmu_t mmu;
+ uint8_t *ram=(uint8_t*)calloc(1,DK_RAM_SIZE); uint8_t disc[4096]={0},sector[2048]; uint32_t *fb=(uint32_t*)calloc(640u*480u,sizeof(uint32_t)); dk_machine_t m; uint32_t v=0; uint16_t got16=0; dk_mmu_t mmu;
  assert(ram&&fb); assert(dk_machine_init(&m,ram,DK_RAM_SIZE,0)==0);
  ram[0]=0xe1;ram[1]=0x2a;ram[2]=0x71;ram[3]=0x01;
  assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[1]==42);
