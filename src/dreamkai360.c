@@ -84,6 +84,12 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  else if((op&0xf00f)==0x2007){uint32_t q=(c->r[n]>>31)&1u,mm=(c->r[m]>>31)&1u;c->sr=(c->sr&~0x301u)|(mm<<9)|(q<<8)|(q^mm);}
  else if(op==0x0019)c->sr&=~0x301u;
  else if((op&0xf0ff)==0x0029)c->r[n]=c->sr&1u;
+ else if((op&0xf0ff)==0x000a)c->r[n]=c->mach;
+ else if((op&0xf0ff)==0x001a)c->r[n]=c->macl;
+ else if((op&0xf0ff)==0x002a)c->r[n]=c->pr;
+ else if((op&0xf0ff)==0x400a)c->mach=c->r[n];
+ else if((op&0xf0ff)==0x401a)c->macl=c->r[n];
+ else if((op&0xf0ff)==0x402a)c->pr=c->r[n];
  else if((op&0xf0ff)==0x4000||(op&0xf0ff)==0x4020){c->sr=(c->sr&~1u)|(c->r[n]>>31);c->r[n]<<=1;}
  else if((op&0xf0ff)==0x4001){c->sr=(c->sr&~1u)|(c->r[n]&1u);c->r[n]>>=1;}
  else if((op&0xf0ff)==0x4021){c->sr=(c->sr&~1u)|(c->r[n]&1u);c->r[n]=(c->r[n]>>1)|(c->r[n]&0x80000000u);}
