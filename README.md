@@ -4,7 +4,7 @@ Emulador experimental de Dreamcast para Xbox 360 RGH.
 ## v1.11b — desvios SH-4 portáveis e testes de slot de atraso
 
 O projeto contém um núcleo C experimental em `src/dreamkai360.h` e `src/dreamkai360.c`, com:
-- CPU SH-4 interpretada e parcial: operações lógicas, comparações, loads/stores, MOV.W/MOV.L relativos ao PC, MOVA, SWAP, EXTU/EXTS, XTRCT, MOVT, TST, DT, SHAL/SHAR, rotações, deslocamentos, aritmética imediata, CMP/PZ, CMP/PL, transferências STS/LDS e STS.L/LDS.L para MACH/MACL/PR, CLRMAC e desvios BRA/BT/BF com extensão de sinal explícita e slot de atraso experimental; R0 preservado como registrador geral
+- CPU SH-4 interpretada e parcial: operações lógicas, comparações, loads/stores, MOV.B/MOV.W/MOV.L relativos ao PC, MOVA, SWAP, EXTU/EXTS, XTRCT, MOVT, TST, DT, SHAL/SHAR, rotações, deslocamentos, aritmética imediata, CMP/PZ, CMP/PL, transferências STS/LDS e STS.L/LDS.L para MACH/MACL/PR, CLRMAC e desvios BRA/BT/BF com extensão de sinal explícita e slot de atraso experimental; R0 preservado como registrador geral
 - MMU/TLB experimental de 64 entradas, ASID e permissões;
 - barramento big-endian de 8/16/32 bits e janelas MMIO experimentais;
 - DMA por orçamento, IRQ e scheduler;
