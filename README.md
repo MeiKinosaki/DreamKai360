@@ -21,6 +21,9 @@ O ELF de teste é uma sonda de compilação e não comprova inicialização no X
 
 ## Busca de instruções e permissões de execução
 
+Falhas de busca por desalinhamento ou por ultrapassar o limite da RAM também incrementam o contador de falhas do barramento; as falhas de tradução/permissão continuam sendo contabilizadas pelo caminho da MMU.
+
+
 A busca de opcode SH-4 usa `dk_bus_fetch16`, caminho separado das leituras de dados. Ele exige alinhamento de 16 bits, aplica a permissão de execução da MMU e lê a instrução da RAM física mapeada. Os testes cobrem uma busca válida e uma tentativa em página não executável, que deve falhar e parar o núcleo. Isso é uma validação do modelo simplificado do projeto, não uma implementação integral de exceções do SH-4.
 
 ## Barramento e MMU — cobertura de regressão
