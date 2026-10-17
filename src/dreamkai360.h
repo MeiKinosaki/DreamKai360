@@ -35,6 +35,7 @@ int dk_mmu_translate(const dk_mmu_t *m,uint32_t va,int wr,int ex,uint32_t *pa);
 void dk_bus_init(dk_bus_t *b,uint8_t *ram,size_t size,dk_mmu_t *mmu);
 int dk_bus_read8(dk_bus_t *b,uint32_t a,uint8_t *v);
 int dk_bus_write8(dk_bus_t *b,uint32_t a,uint8_t v);
+int dk_bus_fetch16(dk_bus_t *b,uint32_t a,uint16_t *v);
 int dk_bus_read16(dk_bus_t *b,uint32_t a,uint16_t *v);
 int dk_bus_write16(dk_bus_t *b,uint32_t a,uint16_t v);
 int dk_bus_read32(dk_bus_t *b,uint32_t a,uint32_t *v);
