@@ -214,11 +214,11 @@ int main(void){
    m.cpu.mach=0x12345678u; m.cpu.macl=0xabcdef01u;
    ram[0x5c6]=0x00; ram[0x5c7]=0x28; /* CLRMAC */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.mach==0u && m.cpu.macl==0u);
-   m.cpu.r[4]=0x13579bdfu; ram[0x5c8]=0x04; ram[0x5c9]=0x0a; /* LDS R4,MACH */
+   m.cpu.r[4]=0x13579bdfu; ram[0x5c8]=0x44; ram[0x5c9]=0x0a; /* LDS R4,MACH */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.mach==0x13579bdfu);
-   ram[0x5ca]=0x04; ram[0x5cb]=0x1a; /* LDS R4,MACL */
+   ram[0x5ca]=0x44; ram[0x5cb]=0x1a; /* LDS R4,MACL */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.macl==0x13579bdfu);
-   ram[0x5cc]=0x04; ram[0x5cd]=0x2a; /* LDS R4,PR */
+   ram[0x5cc]=0x44; ram[0x5cd]=0x2a; /* LDS R4,PR */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.pr==0x13579bdfu);
    m.cpu.mach=0x2468ace0u; m.cpu.macl=0x0badf00du; m.cpu.pr=0xfeed1234u;
    ram[0x5ce]=0x04; ram[0x5cf]=0x0a; /* STS MACH,R4 */
