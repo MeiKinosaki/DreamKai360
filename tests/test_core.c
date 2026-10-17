@@ -211,6 +211,9 @@ int main(void){
    m.cpu.r[2]=0x80000000u; m.cpu.r[3]=1u;
    ram[0x5c4]=0x23; ram[0x5c5]=0x27; /* DIV0S R2,R3: M=1, Q=0, T=1 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && (m.cpu.sr&0x300u)==0x200u && (m.cpu.sr&1u));
+   m.cpu.mach=0x12345678u; m.cpu.macl=0xabcdef01u;
+   ram[0x5c6]=0x00; ram[0x5c7]=0x28; /* CLRMAC */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.mach==0u && m.cpu.macl==0u);
  }
  /* SH-4 carry/borrow and signed-overflow arithmetic regression tests. */
  { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x5d0;
