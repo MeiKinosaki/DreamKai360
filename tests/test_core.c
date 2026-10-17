@@ -51,6 +51,15 @@ int main(void){
    assert(dk_bus_write8(&m.bus,0x3000,0x77)!=0);
    assert(m.bus.faults==old_faults+1 && ram[0x4000]==0);
    assert(dk_bus_read8(&m.bus,0x3000,&got)==0);
+   /* Instruction fetches must honor execute permission, unlike data reads. */
+   ram[0x2000]=0x00; ram[0x2001]=0x09; m.cpu.pc=0x1000;
+   m.cpu.halted=0; m.cpu.branch_pending=0;
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.pc==0x1002);
+   assert(dk_mmu_map(&mmu,5,0x5000,0x6000,1,0)==0);
+   ram[0x6000]=0x00; ram[0x6001]=0x09; m.cpu.pc=0x5000;
+   m.cpu.halted=0; m.cpu.branch_pending=0; old_faults=m.bus.faults;
+   assert(dk_sh4_step(&m.cpu,&m.bus)!=0 && m.cpu.halted);
+   assert(m.bus.faults==old_faults+1);
    m.bus.mmu=&m.mmu;
  }
  dk_dma_reset(&m.dma);assert(dk_dma_start(&m.dma,0x100,0x200,4)==0);
