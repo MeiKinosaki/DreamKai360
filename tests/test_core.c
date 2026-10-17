@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 int main(void){
- uint8_t *ram=(uint8_t*)calloc(1,DK_RAM_SIZE); uint8_t disc[4096]={0},sector[2048]; uint32_t *fb=(uint32_t*)calloc(640u*480u,sizeof(uint32_t)); int16_t audio[128]; dk_machine_t m; uint32_t v=0; dk_mmu_t mmu;
+ uint8_t *ram=(uint8_t*)calloc(1,DK_RAM_SIZE); uint8_t disc[4096]={0},sector[2048]; uint32_t *fb=(uint32_t*)calloc(640u*480u,sizeof(uint32_t)); dk_machine_t m; uint32_t v=0; dk_mmu_t mmu;
  assert(ram&&fb); assert(dk_machine_init(&m,ram,DK_RAM_SIZE,0)==0);
  ram[0]=0xe1;ram[1]=0x2a;ram[2]=0x71;ram[3]=0x01;
  assert(dk_sh4_step(&m.cpu,&m.bus)==0&&m.cpu.r[1]==42);
@@ -209,8 +209,8 @@ int main(void){
    ram[0x5c2]=0x00; ram[0x5c3]=0x19; /* DIV0U */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && (m.cpu.sr&0x301u)==0u);
    m.cpu.r[2]=0x80000000u; m.cpu.r[3]=1u;
-   ram[0x5c4]=0x23; ram[0x5c5]=0x07; /* DIV0S R3,R2 */
-   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && (m.cpu.sr&0x300u)==0x100u && (m.cpu.sr&1u));
+   ram[0x5c4]=0x23; ram[0x5c5]=0x27; /* DIV0S R2,R3: M=1, Q=0, T=1 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && (m.cpu.sr&0x300u)==0x200u && (m.cpu.sr&1u));
  }
  /* SH-4 carry/borrow and signed-overflow arithmetic regression tests. */
  { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x5d0;
