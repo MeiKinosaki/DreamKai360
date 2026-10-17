@@ -19,6 +19,10 @@ O workflow **DreamKai360 Cloud Xenon Toolchain** em `.github/workflows/xenon-clo
 
 O ELF de teste é uma sonda de compilação e não comprova inicialização no Xbox 360.
 
+## Busca de instruções e permissões de execução
+
+A busca de opcode SH-4 usa `dk_bus_fetch16`, caminho separado das leituras de dados. Ele exige alinhamento de 16 bits, aplica a permissão de execução da MMU e lê a instrução da RAM física mapeada. Os testes cobrem uma busca válida e uma tentativa em página não executável, que deve falhar e parar o núcleo. Isso é uma validação do modelo simplificado do projeto, não uma implementação integral de exceções do SH-4.
+
 ## Barramento e MMU — cobertura de regressão
 
 Os testes também verificam que a tradução de endereços virtuais da MMU é aplicada pelo barramento, que leituras/escritas chegam à página física mapeada e que uma página somente leitura rejeita escritas e incrementa o contador de falhas. Esta cobertura valida o caminho do barramento em testes de host; ainda não equivale à implementação completa da MMU do Dreamcast nem à execução no Xbox 360 RGH.
