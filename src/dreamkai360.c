@@ -108,6 +108,7 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  else if((op&0xf0ff)==0x4015){if((int32_t)c->r[n]>0)c->sr|=1u;else c->sr&=~1u;}
  else if(op==0x0008)c->sr&=~1u;
  else if(op==0x0018)c->sr|=1u;
+ else if(op==0x0028){c->mach=0;c->macl=0;}
  else if((op&0xf00f)==0x300e){uint64_t sum=(uint64_t)c->r[n]+c->r[m]+(c->sr&1u);c->r[n]=(uint32_t)sum;c->sr=(c->sr&~1u)|(uint32_t)(sum>>32);}
  else if((op&0xf00f)==0x300a){uint32_t a=c->r[n],v=c->r[m],t=c->sr&1u;c->r[n]=a-v-t;c->sr=(c->sr&~1u)|((a<v||(t&&a==v))?1u:0u);}
  else if((op&0xf00f)==0x300f){uint32_t a=c->r[n],v=c->r[m],res=a+v;c->r[n]=res;c->sr=(c->sr&~1u)|(((~(a^v)&(a^res))>>31)&1u);}
