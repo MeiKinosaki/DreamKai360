@@ -37,7 +37,7 @@ int dk_bus_write8(dk_bus_t*b,uint32_t a,uint8_t v){uint32_t p;if(!b||phys(b,a,1,
  else return -1;
  b->writes++;
  return 0;}
-int dk_bus_fetch16(dk_bus_t*b,uint32_t a,uint16_t*v){uint32_t p; if(!b||!v||(a&1)||phys(b,a,0,1,&p))return -1; if(!b->ram||p>=b->ram_size||p+1u>=b->ram_size)return -1; *v=(uint16_t)(((uint16_t)b->ram[p]<<8)|b->ram[p+1u]); b->reads++; return 0;}
+int dk_bus_fetch16(dk_bus_t*b,uint32_t a,uint16_t*v){uint32_t p; if(!b||!v)return -1; if(a&1u){b->faults++;return -1;} if(phys(b,a,0,1,&p))return -1; if(!b->ram||p>=b->ram_size||p+1u>=b->ram_size){b->faults++;return -1;} *v=(uint16_t)(((uint16_t)b->ram[p]<<8)|b->ram[p+1u]); b->reads++; return 0;}
 int dk_bus_read16(dk_bus_t*b,uint32_t a,uint16_t*v){uint8_t x,y;if((a&1)||!v||dk_bus_read8(b,a,&x)||dk_bus_read8(b,a+1,&y))return -1;*v=(uint16_t)(((uint16_t)x<<8)|y);return 0;}
 int dk_bus_write16(dk_bus_t*b,uint32_t a,uint16_t v){return (a&1)?-1:(dk_bus_write8(b,a,(uint8_t)(v>>8))||dk_bus_write8(b,a+1,(uint8_t)v)?-1:0);}
 int dk_bus_read32(dk_bus_t*b,uint32_t a,uint32_t*v){uint16_t x,y;if((a&3)||!v||dk_bus_read16(b,a,&x)||dk_bus_read16(b,a+2,&y))return -1;*v=((uint32_t)x<<16)|y;return 0;}
