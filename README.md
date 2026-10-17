@@ -4,18 +4,18 @@ Emulador experimental de Dreamcast para Xbox 360 RGH.
 ## v1.11b — desvios SH-4 portáveis e testes de slot de atraso
 
 O projeto contém um núcleo C experimental em `src/dreamkai360.h` e `src/dreamkai360.c`, com:
-- CPU SH-4 interpretada e parcial: operações lógicas, comparações, loads/stores, SWAP, EXTU/EXTS, XTRCT, MOVT, TST, DT, SHAL/SHAR, rotações, deslocamentos, aritmética imediata, CMP/PZ, CMP/PL, transferências STS/LDS e STS.L/LDS.L para MACH/MACL/PR, CLRMAC e desvios BRA/BT/BF com extensão de sinal explícita e slot de atraso experimental;
+- CPU SH-4 interpretada e parcial: operações lógicas, comparações, loads/stores, MOV.W/MOV.L relativos ao PC, MOVA, SWAP, EXTU/EXTS, XTRCT, MOVT, TST, DT, SHAL/SHAR, rotações, deslocamentos, aritmética imediata, CMP/PZ, CMP/PL, transferências STS/LDS e STS.L/LDS.L para MACH/MACL/PR, CLRMAC e desvios BRA/BT/BF com extensão de sinal explícita e slot de atraso experimental; R0 preservado como registrador geral
 - MMU/TLB experimental de 64 entradas, ASID e permissões;
 - barramento big-endian de 8/16/32 bits e janelas MMIO experimentais;
 - DMA por orçamento, IRQ e scheduler;
 - framebuffer experimental PVR2 com limpeza, retângulos preenchidos e contagem de quadros;
 - mixer de tom de teste, leitura de setores de 2048 bytes de imagem GD-ROM montada em memória e estado básico de entrada Maple.
 
-Os testes de regressão em `tests/test_core.c` cobrem instruções SH-4 selecionadas, desvios positivos/negativos e slot de atraso, comparações assinadas CMP/PZ e CMP/PL, transferências MACH/MACL/PR, incluindo acessos empilhados STS.L/LDS.L, e CLRMAC, ADDC/SUBC com carry/borrow e ADDV/SUBV com overflow, MMIO AICA/PVR, permissões da MMU, framebuffer, DMA/IRQ e limites do scheduler.
+Os testes de regressão em `tests/test_core.c` cobrem instruções SH-4 selecionadas, loads relativos ao PC, MOVA, desvios positivos/negativos e slot de atraso, comparações assinadas CMP/PZ e CMP/PL, transferências MACH/MACL/PR, incluindo acessos empilhados STS.L/LDS.L, CLRMAC, ADDC/SUBC com carry/borrow e ADDV/SUBV com overflow, MMIO AICA/PVR, permissões da MMU, framebuffer, DMA/IRQ e limites do scheduler.
 
 ## Toolchain Xenon na nuvem
 
-O workflow **DreamKai360 Cloud Xenon Toolchain** em `.github/workflows/xenon-cloud.yml` executa os testes host, constrói a toolchain Free60/libXenon e tenta compilar um ELF de teste que vincula o núcleo. A execução #102 passou para a implementação de CLRMAC e testes prévios. A execução #103 falhou na suíte host devido a codificações incorretas dos opcodes LDS nos testes; a codificação foi corrigida na revisão seguinte e a execução #104 está aguardando validação. Consulte [GitHub Actions](https://github.com/MeiKinosaki/DreamKai360/actions) para o resultado atual. Isso não equivale a um `default.xex` nem a teste em console; consulte [GitHub Actions](https://github.com/MeiKinosaki/DreamKai360/actions) para a execução mais recente.
+O workflow **DreamKai360 Cloud Xenon Toolchain** em `.github/workflows/xenon-cloud.yml` executa os testes host, constrói a toolchain Free60/libXenon e tenta compilar um ELF de teste que vincula o núcleo. A execução #108 concluiu com sucesso em 17/10/2026 para a revisão anterior. A revisão atual adiciona loads relativos ao PC e preserva R0 como registrador geral; aguarde o workflow disparado por estes commits para confirmar a suíte host e o ELF. Consulte [GitHub Actions](https://github.com/MeiKinosaki/DreamKai360/actions) para o resultado atual. Isso não equivale a um `default.xex` nem a teste em console; consulte [GitHub Actions](https://github.com/MeiKinosaki/DreamKai360/actions) para a execução mais recente.
 
 O ELF de teste é uma sonda de compilação e não comprova inicialização no Xbox 360.
 
