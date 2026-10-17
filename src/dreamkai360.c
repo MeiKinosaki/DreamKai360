@@ -79,7 +79,10 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  else if((op&0xf00f)==0x600e)c->r[n]=(uint32_t)(int32_t)(int8_t)c->r[m];
  else if((op&0xf00f)==0x600f)c->r[n]=(uint32_t)(int32_t)(int16_t)c->r[m];
  else if((op&0xf00f)==0x200d)c->r[n]=(c->r[n]>>16)|(c->r[m]<<16);
+ else if((op&0xf00f)==0x600a){uint32_t v=c->r[m],t=c->sr&1u;c->r[n]=0u-v-t;c->sr=(c->sr&~1u)|((v!=0u||t)?1u:0u);}
  else if((op&0xf00f)==0x600b)c->r[n]=0u-c->r[m];
+ else if((op&0xf00f)==0x2007){uint32_t q=(c->r[n]>>31)&1u,mm=(c->r[m]>>31)&1u;c->sr=(c->sr&~0x301u)|(mm<<9)|(q<<8)|(q^mm);}
+ else if(op==0x0019)c->sr&=~0x301u;
  else if((op&0xf0ff)==0x0029)c->r[n]=c->sr&1u;
  else if((op&0xf0ff)==0x4000||(op&0xf0ff)==0x4020){c->sr=(c->sr&~1u)|(c->r[n]>>31);c->r[n]<<=1;}
  else if((op&0xf0ff)==0x4001){c->sr=(c->sr&~1u)|(c->r[n]&1u);c->r[n]>>=1;}
