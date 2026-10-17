@@ -227,6 +227,14 @@ int main(void){
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[4]==0x0badf00du);
    ram[0x5d2]=0x04; ram[0x5d3]=0x2a; /* STS PR,R4 */
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[4]==0xfeed1234u);
+   /* SH-4 STS.L/LDS.L special registers through @-Rn/@Rn+. */
+   m.cpu.r[5]=0x380u; m.cpu.mach=0x10203040u;
+   ram[0x5d4]=0x45; ram[0x5d5]=0x02; /* STS.L MACH,@-R5 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[5]==0x37cu);
+   { uint32_t v=0; assert(dk_bus_read32(&m.bus,0x37cu,&v)==0 && v==0x10203040u); }
+   m.cpu.r[5]=0x37cu; m.cpu.mach=0u;
+   ram[0x5d6]=0x45; ram[0x5d7]=0x06; /* LDS.L @R5+,MACH */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.mach==0x10203040u && m.cpu.r[5]==0x380u);
  }
  /* SH-4 carry/borrow and signed-overflow arithmetic regression tests. */
  { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x5d0;
