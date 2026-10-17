@@ -59,6 +59,7 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  else if((op&0xf000)==0xe000)c->r[n]=(uint32_t)(int32_t)(int8_t)op;
  else if((op&0xf000)==0x9000){uint16_t v;uint32_t a=pc+4u+(uint32_t)((op&0xffu)*2u);if(dk_bus_read16(b,a,&v))return -1;c->r[n]=(uint32_t)(int32_t)(int16_t)v;}
  else if((op&0xf000)==0xd000){uint32_t v,a=((pc+4u)&~3u)+(uint32_t)((op&0xffu)*4u);if(dk_bus_read32(b,a,&v))return -1;c->r[n]=v;}
+ else if((op&0xff00)==0xc400){uint8_t v;uint32_t a=pc+4u+(uint32_t)(op&0xffu);if(dk_bus_read8(b,a,&v))return -1;c->r[0]=(uint32_t)(int32_t)(int8_t)v;}
  else if((op&0xff00)==0xc700)c->r[0]=((pc+4u)&~3u)+(uint32_t)((op&0xffu)*4u);
  else if((op&0xf000)==0x7000)c->r[n]+=(uint32_t)(int32_t)(int8_t)op;
  else if((op&0xf00f)==0x6003)c->r[n]=c->r[m];
