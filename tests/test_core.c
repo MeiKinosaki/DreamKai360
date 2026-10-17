@@ -303,5 +303,19 @@ int main(void){
  assert(dk_machine_step(&m,4,2)==0);
  assert(!m.dma.active && (m.irq.pending&DK_IRQ_DMA) && m.irq.raised==1);
  assert(dk_machine_step(&m,4,2)==0 && m.irq.raised==1);
+ /* SH-4 indexed loads: MOV.B/W/L @(R0,Rm),Rn. */
+ { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x690;
+   m.cpu.r[0]=0x700u; m.cpu.r[3]=0x20u;
+   ram[0x720]=0x80; /* signed byte */
+   ram[0x722]=0x80; ram[0x723]=0x01; /* signed big-endian word */
+   ram[0x724]=0x89; ram[0x725]=0xab; ram[0x726]=0xcd; ram[0x727]=0xef;
+   ram[0x690]=0x23; ram[0x691]=0x0c; /* MOV.B @(R0,R3),R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffffff80u);
+   m.cpu.pc=0x692; ram[0x692]=0x23; ram[0x693]=0x0d; /* MOV.W @(R0,R3),R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0xffff8001u);
+   m.cpu.pc=0x694; ram[0x694]=0x23; ram[0x695]=0x0e; /* MOV.L @(R0,R3),R2 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x89abcdefu);
+   assert(m.cpu.r[0]==0x700u && m.cpu.r[3]==0x20u);
+ }
  free(fb); free(ram);return 0;
 }
