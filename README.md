@@ -19,6 +19,10 @@ O workflow **DreamKai360 Cloud Xenon Toolchain** em `.github/workflows/xenon-clo
 
 O ELF de teste é uma sonda de compilação e não comprova inicialização no Xbox 360.
 
+## Núcleo SH-4: instruções em progresso
+
+O interpretador também inclui loads indexados `MOV.B/W/L @(R0,Rm),Rn`, com leitura de byte/word/longword pelo barramento e extensão de sinal para byte e word. Testes de regressão cobrem valores negativos, ordenação big-endian e preservação dos registradores de endereço. Isso amplia apenas o subconjunto de instruções; não representa cobertura completa do SH-4.
+
 ## Limitações conhecidas
 
 Este núcleo **não é ainda um emulador funcional de Dreamcast**. O SH-4 implementa apenas um subconjunto pequeno de instruções e ainda não possui tratamento completo de exceções, divisão iterativa DIV1 e apenas suporte parcial a registradores especiais MACH/MACL/PR. O mapa físico, alinhamento e MMIO precisam de validação contra o hardware. O PVR2 não rasteriza polígonos e texturas reais; o mixer AICA é apenas um tom de teste; GD-ROM não interpreta imagens CDI/GDI nem implementa todos os comandos do dispositivo; Maple não implementa o protocolo completo. Também faltam BIOS/boot, carregamento de jogos, sincronização completa dos periféricos, integração real de vídeo/áudio libXenon e geração validada de `default.xex`.
