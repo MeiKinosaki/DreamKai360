@@ -281,8 +281,8 @@ int main(void){
    m.cpu.pc=0x670; ram[0x670]=0xd3; ram[0x671]=0x01; /* MOV.L @(1,PC),R3 => 0x678 */
    ram[0x678]=0x12; ram[0x679]=0x34; ram[0x67a]=0x56; ram[0x67b]=0x78;
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[3]==0x12345678u);
-   m.cpu.pc=0x680; ram[0x680]=0xc7; ram[0x681]=0x03; /* MOVA @(3,PC),R0 => 0x68c */
-   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[0]==0x68cu);
+   m.cpu.pc=0x680; ram[0x680]=0xc7; ram[0x681]=0x03; /* MOVA @(3,PC),R0 => 0x690 */
+   assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[0]==0x690u);
  }
  /* GD-ROM sector bounds, malformed sizes and Maple input state. */
  assert(dk_gdrom_mount(&m.gdrom,disc,sizeof(disc)-1u)!=0);
