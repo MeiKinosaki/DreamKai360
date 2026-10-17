@@ -61,6 +61,13 @@ int main(void){
    assert(dk_sh4_step(&m.cpu,&m.bus)!=0 && m.cpu.halted);
    assert(m.bus.faults==old_faults+1);
    m.bus.mmu=&m.mmu;
+   /* Misaligned and out-of-range instruction fetches count as bus faults. */
+   old_faults=m.bus.faults;
+   assert(dk_bus_fetch16(&m.bus,0x101, &got16)!=0);
+   assert(m.bus.faults==old_faults+1);
+   old_faults=m.bus.faults;
+   assert(dk_bus_fetch16(&m.bus,(uint32_t)(sizeof(ram)-1u), &got16)!=0);
+   assert(m.bus.faults==old_faults+1);
  }
  dk_dma_reset(&m.dma);assert(dk_dma_start(&m.dma,0x100,0x200,4)==0);
  assert(dk_dma_step(&m.dma,&m.bus,0)==0 && m.dma.active && m.dma.done==0);
