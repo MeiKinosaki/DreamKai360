@@ -141,7 +141,7 @@ int dk_sh4_step(dk_sh4_t*c,dk_bus_t*b){
  else if(op==0x001b)c->halted=1;
  else {c->halted=1;return -2;}
  if(was_pending){if(c->branch_pending){c->halted=1;return -3;}c->pc=oldtarget;}
- c->r[0]=0;c->cycles+=2;b->fetches++;return 0;
+ c->cycles+=2;b->fetches++;return 0;
 }
 void dk_dma_reset(dk_dma_t*d){if(d)memset(d,0,sizeof(*d));}
 int dk_dma_start(dk_dma_t*d,uint32_t s,uint32_t t,uint32_t n){if(!d||!n||d->active)return -1;d->src=s;d->dst=t;d->length=n;d->done=0;d->active=1;d->error=0;return 0;}
