@@ -335,6 +335,13 @@ int main(void){
  assert(dk_machine_step(&m,4,2)==0);
  assert(!m.dma.active && (m.irq.pending&DK_IRQ_DMA) && m.irq.raised==1);
  assert(dk_machine_step(&m,4,2)==0 && m.irq.raised==1);
+ /* Failed DMA transfers must not masquerade as successful completion IRQs. */
+ dk_irq_ack(&m.irq,DK_IRQ_DMA); m.irq.raised=0;
+ m.cpu.halted=0; m.cpu.pc=2; ram[2]=0x00; ram[3]=0x09;
+ assert(dk_dma_start(&m.dma,(uint32_t)(sizeof(ram)-1u),0x500,2)==0);
+ assert(dk_machine_step(&m,2,1)==0);
+ assert(m.dma.error && !m.dma.active && m.dma.done==1);
+ assert(!(m.irq.pending&DK_IRQ_DMA) && m.irq.raised==0);
  /* SH-4 indexed loads: MOV.B/W/L @(R0,Rm),Rn. */
  { m.cpu.halted=0; m.cpu.branch_pending=0; m.cpu.pc=0x690;
    m.cpu.r[0]=0x700u; m.cpu.r[3]=0x20u;
