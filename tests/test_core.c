@@ -369,5 +369,19 @@ int main(void){
    assert(dk_sh4_step(&m.cpu,&m.bus)==0 && m.cpu.r[2]==0x89abcdefu);
    assert(m.cpu.r[0]==0x700u && m.cpu.r[3]==0x24u);
  }
+ /* GD-ROM sector reads: validate alignment, bounds, and exact sector contents. */
+ { dk_gdrom_t g; size_t i;
+   for(i=0;i<sizeof(disc);i++)disc[i]=(uint8_t)(i/2048u ? 0x5au : 0xa5u);
+   dk_gdrom_reset(&g);
+   assert(g.ready && !g.image && g.sectors==0);
+   assert(dk_gdrom_mount(&g,disc,sizeof(disc)-1u)!=0);
+   assert(dk_gdrom_mount(&g,disc,sizeof(disc))==0 && g.sectors==2);
+   assert(dk_gdrom_read_sector(&g,0,sector)==0 && sector[0]==0xa5u && sector[2047]==0xa5u);
+   assert(!g.reading && g.lba==0);
+   assert(dk_gdrom_read_sector(&g,1,sector)==0 && sector[0]==0x5au && sector[2047]==0x5au);
+   assert(!g.reading && g.lba==1);
+   assert(dk_gdrom_read_sector(&g,2,sector)!=0); /* one-past-end LBA */
+   assert(dk_gdrom_mount(&g,0,sizeof(disc))!=0);
+ }
  free(fb); free(ram);return 0;
 }
