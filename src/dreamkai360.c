@@ -163,7 +163,7 @@ uint32_t dk_dma_step(dk_dma_t*d,dk_bus_t*b,uint32_t budget){
  if(d->done>=d->length)d->active=0;
  return k;
 }
-void dk_irq_raise(dk_irq_t*i,uint32_t bits){if(i){i->pending|=bits;i->raised++;}}
+void dk_irq_raise(dk_irq_t*i,uint32_t bits){if(i){uint32_t fresh=bits&~i->pending;i->pending|=bits;if(fresh)i->raised++;}}
 void dk_irq_ack(dk_irq_t*i,uint32_t bits){if(i)i->pending&=~bits;}
 uint32_t dk_irq_active(const dk_irq_t*i){return i?(i->pending&~i->mask):0;}
 void dk_scheduler_advance(dk_scheduler_t*s,uint64_t c){if(s)s->now=(UINT64_MAX-s->now<c)?UINT64_MAX:s->now+c;}
