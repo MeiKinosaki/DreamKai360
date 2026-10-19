@@ -338,7 +338,7 @@ int main(void){
  /* Failed DMA transfers must not masquerade as successful completion IRQs. */
  dk_irq_ack(&m.irq,DK_IRQ_DMA); m.irq.raised=0;
  m.cpu.halted=0; m.cpu.pc=2; ram[2]=0x00; ram[3]=0x09;
- assert(dk_dma_start(&m.dma,(uint32_t)(sizeof(ram)-1u),0x500,2)==0);
+ assert(dk_dma_start(&m.dma,(uint32_t)(DK_RAM_SIZE-1u),0x500,2)==0);
  assert(dk_machine_step(&m,2,1)==0);
  assert(m.dma.error && !m.dma.active && m.dma.done==1);
  assert(!(m.irq.pending&DK_IRQ_DMA) && m.irq.raised==0);
