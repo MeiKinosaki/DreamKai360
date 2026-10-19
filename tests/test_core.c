@@ -69,6 +69,12 @@ int main(void){
    assert(dk_bus_fetch16(&m.bus,(uint32_t)(sizeof(ram)-1u), &got16)!=0);
    assert(m.bus.faults==old_faults+1);
  }
+ /* DMA setup rejects empty transfers and cannot overwrite an active transfer. */
+ dk_dma_reset(&m.dma);
+ assert(dk_dma_start(&m.dma,0x100,0x200,0)==-1 && !m.dma.active);
+ assert(dk_dma_start(&m.dma,0x100,0x200,4)==0);
+ assert(dk_dma_start(&m.dma,0x900,0xa00,8)==-1);
+ assert(m.dma.active && m.dma.src==0x100 && m.dma.dst==0x200 && m.dma.length==4 && m.dma.done==0);
  dk_dma_reset(&m.dma);assert(dk_dma_start(&m.dma,0x100,0x200,4)==0);
  assert(dk_dma_step(&m.dma,&m.bus,0)==0 && m.dma.active && m.dma.done==0);
  assert(dk_dma_step(&m.dma,&m.bus,4)==4);assert(dk_bus_read32(&m.bus,0x200,&v)==0&&v==0x12345678);
