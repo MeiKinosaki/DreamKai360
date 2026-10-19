@@ -19,6 +19,10 @@ O workflow **DreamKai360 Cloud Xenon Toolchain** em `.github/workflows/xenon-clo
 
 O ELF de teste é uma sonda de compilação e não comprova inicialização no Xbox 360.
 
+## Interrupções — contagem de novas pendências
+
+`dk_irq_raise` mantém os bits pendentes e só incrementa o contador de eventos quando a chamada introduz pelo menos um bit que ainda não estava pendente. Repetir a mesma interrupção sem reconhecê-la não cria uma nova borda; após `dk_irq_ack`, a interrupção pode ser levantada novamente e contabilizada. Isso modela a pendência básica, sem alegar um controlador completo de interrupções SH-4.
+
 ## Busca de instruções e permissões de execução
 
 Falhas de busca por desalinhamento ou por ultrapassar o limite da RAM também incrementam o contador de falhas do barramento; as falhas de tradução/permissão continuam sendo contabilizadas pelo caminho da MMU.
