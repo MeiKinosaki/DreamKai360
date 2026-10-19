@@ -21,6 +21,9 @@ O ELF de teste é uma sonda de compilação e não comprova inicialização no X
 
 ## Interrupções — contagem de novas pendências
 
+A integração máquina/DMA também tem regressão para erro de transferência: uma DMA que falha por ultrapassar a RAM não deve emitir a IRQ de conclusão bem-sucedida. A IRQ de conclusão continua reservada a transferências concluídas integralmente.
+
+
 `dk_irq_raise` mantém os bits pendentes e só incrementa o contador de eventos quando a chamada introduz pelo menos um bit que ainda não estava pendente. Repetir a mesma interrupção sem reconhecê-la não cria uma nova borda; após `dk_irq_ack`, a interrupção pode ser levantada novamente e contabilizada. Isso modela a pendência básica, sem alegar um controlador completo de interrupções SH-4.
 
 ## Busca de instruções e permissões de execução
