@@ -90,6 +90,10 @@ int main(void){
  assert(fb[10u*640u+10u]==0xffffffffu);
  dk_pvr_present(&m.pvr);assert(m.pvr.frames==1);
  dk_irq_raise(&m.irq,DK_IRQ_VBLANK);assert(dk_irq_active(&m.irq)&DK_IRQ_VBLANK);
+ { uint64_t raises=m.irq.raised; dk_irq_raise(&m.irq,DK_IRQ_VBLANK);
+   assert(m.irq.raised==raises); /* duplicate pending bit is not a new edge */
+   dk_irq_ack(&m.irq,DK_IRQ_VBLANK); dk_irq_raise(&m.irq,DK_IRQ_VBLANK);
+   assert(m.irq.raised==raises+1); }
  m.irq.mask=DK_IRQ_VBLANK;assert(!(dk_irq_active(&m.irq)&DK_IRQ_VBLANK));
  m.irq.mask=0;assert(dk_irq_active(&m.irq)&DK_IRQ_VBLANK);
  dk_irq_ack(&m.irq,DK_IRQ_VBLANK);assert(!(dk_irq_active(&m.irq)&DK_IRQ_VBLANK));
