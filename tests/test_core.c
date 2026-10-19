@@ -61,12 +61,13 @@ int main(void){
    assert(dk_sh4_step(&m.cpu,&m.bus)!=0 && m.cpu.halted);
    assert(m.bus.faults==old_faults+1);
    m.bus.mmu=&m.mmu;
-   /* Misaligned and out-of-range instruction fetches count as bus faults. */
+   /* Misaligned and aligned out-of-range instruction fetches count as bus faults. */
    old_faults=m.bus.faults;
    assert(dk_bus_fetch16(&m.bus,0x101, &got16)!=0);
    assert(m.bus.faults==old_faults+1);
    old_faults=m.bus.faults;
-   assert(dk_bus_fetch16(&m.bus,(uint32_t)(sizeof(ram)-1u), &got16)!=0);
+   /* sizeof(ram) is only the host pointer size; use the actual RAM boundary. */
+   assert(dk_bus_fetch16(&m.bus,(uint32_t)DK_RAM_SIZE, &got16)!=0);
    assert(m.bus.faults==old_faults+1);
  }
  /* DMA setup rejects empty transfers and cannot overwrite an active transfer. */
